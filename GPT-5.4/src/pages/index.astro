@@ -1,17 +1,1416 @@
 ---
+const version = "v0.19.7";
+const metrics = [
+  { value: "1800+", label: "tests", note: "compiler and runtime coverage" },
+  { value: "220+", label: "built-ins", note: "strings, arrays, math, I/O, system, ptr/buffer" },
+  { value: "10", label: "data types", note: "from scalar values to arrays, objects, pointers, enums" },
+  { value: "0", label: "runtime deps", note: "no Zend Engine, no VM, no bundled PHP" },
+];
 
+const comparisonRows = [
+  {
+    label: "Packager",
+    detail:
+      "Bundles a PHP runtime into one artifact. Easier distribution, but the program is still PHP running on PHP.",
+  },
+  {
+    label: "VM or JIT path",
+    detail:
+      "Stays inside the Zend execution model. Faster in places, but the engine remains the contract.",
+  },
+  {
+    label: "Hybrid AOT with fallback",
+    detail:
+      "Compiles some paths and quietly returns to opcodes for the rest. Useful, but mechanically ambiguous.",
+  },
+  {
+    label: "elephc",
+    detail:
+      "Parses a static subset, type-checks it, lowers to native assembly, assembles, and links. If it compiles, it runs as native code.",
+  },
+];
+
+const pipelineStages = [
+  {
+    stage: "01",
+    title: "Parse",
+    summary: "PHP source becomes an AST the compiler can reason about structurally.",
+    snippet: `<?php
+function dot(int $ax, int $ay, int $bx, int $by): int {
+    return ($ax * $bx) + ($ay * $by);
+}
+
+echo dot(3, 4, 10, 20) . "\\n";`,
+    footer: "Input is still recognizably PHP. The gain is that the compiler now owns the structure.",
+  },
+  {
+    stage: "02",
+    title: "Type-check",
+    summary: "The static subset becomes a contract. Unsupported dynamic behavior stops here instead of hiding at runtime.",
+    snippet: `Function dot -> int
+params:
+  ax: int
+  ay: int
+  bx: int
+  by: int
+
+BinaryOp(Add)
+  BinaryOp(Mul, int, int)
+  BinaryOp(Mul, int, int)`,
+    footer: "This is the point of the subset: the compiler can prove more, optimize more, and guess less.",
+  },
+  {
+    stage: "03",
+    title: "Lower",
+    summary: "High-level PHP semantics turn into target-aware operations, storage decisions, and control-flow blocks.",
+    snippet: `block entry:
+  t0 = load ax
+  t1 = load bx
+  t2 = imul t0, t1
+  t3 = load ay
+  t4 = load by
+  t5 = imul t3, t4
+  ret add t2, t5`,
+    footer: "This is where compiler passes like folding, propagation, DCE, and CFG cleanup begin to pay off.",
+  },
+  {
+    stage: "04",
+    title: "Emit assembly",
+    summary: "Lowered operations become readable target-specific assembly with no interpreter waiting behind them.",
+    snippet: `mov x8, x0
+mul x8, x8, x2
+mov x9, x1
+mul x9, x9, x3
+add x0, x8, x9
+ret`,
+    footer: "elephc exposes the machine-facing result instead of treating it like an implementation detail.",
+  },
+  {
+    stage: "05",
+    title: "Assemble and link",
+    summary: "The compiler hands native code to the platform toolchain and produces a standalone binary.",
+    snippet: `$ elephc dot.php --emit-asm --source-map --timings
+parse .......... 2.8ms
+typecheck ...... 3.4ms
+optimize ....... 1.1ms
+codegen ........ 2.5ms
+link ........... 14.6ms
+
+$ ./dot
+110`,
+    footer: "The final artifact is an executable, not a wrapped script and not a VM payload.",
+  },
+];
+
+const supportBlocks = [
+  {
+    title: "Language surface",
+    items: [
+      "Functions, recursion, closures, namespaces, includes",
+      "Classes, traits, interfaces, abstract classes, enums",
+      "Union and nullable types, named arguments, readonly",
+      "if / while / for / foreach / switch / match / exceptions",
+    ],
+  },
+  {
+    title: "Built-ins",
+    items: [
+      "Strings: formatting, hashing, encoding, ctype",
+      "Arrays: sort, map, reduce, search, merge, copy-on-write",
+      "Math: trig, logs, random, power, rounding",
+      "I/O and system: files, env, JSON, regex, exec, time",
+    ],
+  },
+  {
+    title: "Targets",
+    items: [
+      "macOS ARM64",
+      "Linux ARM64",
+      "Linux x86_64",
+      "Native assembler and linker on the host platform",
+    ],
+  },
+];
+
+const extensionBlocks = [
+  {
+    title: "packed class",
+    description: "Flat POD-style records for predictable layout.",
+    snippet: `packed class Vec2 {
+    public float $x;
+    public float $y;
+}`,
+  },
+  {
+    title: "buffer<T>",
+    description: "Typed contiguous storage for hot-path data.",
+    snippet: `buffer<int> $samples = buffer_new<int>(1024);
+echo buffer_len($samples) . "\\n";`,
+  },
+  {
+    title: "extern + ptr",
+    description: "Cross the FFI boundary without abandoning PHP-shaped code.",
+    snippet: `extern function memcpy(ptr $dst, ptr $src, int $len): ptr;
+$dst = ptr_null();`,
+  },
+];
+
+const limits = [
+  "No interpreter fallback. Unsupported dynamic patterns fail at compile time.",
+  "The current sweet spot is static and performance-sensitive modules, not an entire framework runtime.",
+  "Today the main output is a standalone binary. Shared libraries and a PHP extension bridge are on the roadmap.",
+];
+
+const proofPoints = [
+  "Loads original DOOM WAD files and renders E1M1 in real time.",
+  "BSP traversal, perspective projection, sector lighting, per-column fog.",
+  "Collision detection and step climbing in code written in PHP.",
+  "SDL2 FFI, packed geometry, typed buffers, and low-level data layout where it matters.",
+];
+
+const installCards = [
+  {
+    title: "Homebrew",
+    body: `brew install illegalstudio/tap/elephc`,
+  },
+  {
+    title: "From source",
+    body: `git clone https://github.com/illegalstudio/elephc.git
+cd elephc
+cargo build --release`,
+  },
+  {
+    title: "Inspect the output",
+    body: `elephc hello.php --emit-asm --source-map --timings
+./hello`,
+  },
+];
+
+const roadmap = [
+  {
+    label: "0.17.9",
+    title: "DOOM showcase landed",
+    note: "Proof that the subset is already capable of non-trivial native programs.",
+  },
+  {
+    label: "0.18.x",
+    title: "Linux support and developer tooling",
+    note: "ARM64 and x86_64 support, emitted assembly, source maps, timings, benchmark harness.",
+  },
+  {
+    label: "0.19.7",
+    title: "Optimizer now has teeth",
+    note: "Constant folding, constant propagation, dead-code elimination, CFG-lite reachability.",
+    current: true,
+  },
+  {
+    label: "next",
+    title: "Libraries and bridge work",
+    note: "Shared/static libraries for compiled PHP modules, then a PHP extension bridge for framework integration.",
+  },
+  {
+    label: "1.0.0",
+    title: "Production-ready",
+    note: "A compiler serious enough to trust for real hot paths, not just experiments.",
+  },
+];
 ---
 
+<!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta
+      name="description"
+      content="elephc is an open-source compiler that turns a static subset of PHP into native assembly and standalone binaries."
+    />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>elephc | PHP compiled to native assembly</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Primary">
+        <a class="brand" href="#top">
+          <span class="brand-mark">elephc</span>
+          <span class="brand-note">PHP -> native assembly</span>
+        </a>
+
+        <div class="nav-links">
+          <a href="#pipeline">How it works</a>
+          <a href="#subset">Supported subset</a>
+          <a href="#proof">Proof</a>
+          <a href="#start">Get started</a>
+          <a href="https://github.com/illegalstudio/elephc/tree/main/docs" target="_blank" rel="noreferrer">
+            Docs
+          </a>
+          <a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noreferrer">
+            GitHub
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Open-source compiler / current release {version}</p>
+          <h1 id="hero-title">
+            PHP,
+            <span>lowered to native assembly.</span>
+          </h1>
+          <p class="hero-lead">
+            elephc is a from-scratch compiler for a static subset of PHP. The pipeline is parse ->
+            type-check -> lower -> assemble -> link. There is no interpreter, no VM, no Zend Engine,
+            and no opcode fallback hiding behind the compiled path.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-solid" href="#start">Get started</a>
+            <a class="button button-ghost" href="#proof">See the DOOM proof</a>
+          </div>
+
+          <dl class="hero-facts" aria-label="Project facts">
+            {metrics.map((metric) => (
+              <div>
+                <dt>{metric.label}</dt>
+                <dd>{metric.value}</dd>
+                <p>{metric.note}</p>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div class="hero-board" aria-label="Compiler overview">
+          <div class="board-ribbon">
+            <span>compiler contract</span>
+            <span>static subset only</span>
+          </div>
+
+          <div class="board-grid">
+            <article class="panel panel-source">
+              <div class="panel-heading">
+                <span>source.php</span>
+                <span>typed input</span>
+              </div>
+              <pre><code>{`<?php
+packed class Sample {
+    public int $value;
+}
+
+function square(int $n): int {
+    return $n * $n;
+}
+
+echo square(12) . "\\n";`}</code></pre>
+            </article>
+
+            <article class="panel panel-asm">
+              <div class="panel-heading">
+                <span>native asm</span>
+                <span>ARM64 excerpt</span>
+              </div>
+              <pre><code>{`square:
+  mul x0, x0, x0
+  ret
+
+main:
+  mov x0, #12
+  bl square
+  bl print_int_ln`}</code></pre>
+            </article>
+
+            <article class="panel panel-build">
+              <div class="panel-heading">
+                <span>build log</span>
+                <span>CLI</span>
+              </div>
+              <pre><code>{`$ elephc hello.php --timings
+parse ........ 3.1ms
+typecheck .... 4.0ms
+optimize ..... 1.3ms
+codegen ...... 2.8ms
+link ......... 15.2ms
+
+$ ./hello
+144`}</code></pre>
+            </article>
+
+            <article class="panel panel-targets">
+              <div class="panel-heading">
+                <span>targets</span>
+                <span>today</span>
+              </div>
+              <ul>
+                <li>macOS ARM64</li>
+                <li>Linux ARM64</li>
+                <li>Linux x86_64</li>
+                <li>Standalone binaries now</li>
+                <li>Libraries and PHP bridge next</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section boundary" id="boundary" aria-labelledby="boundary-title">
+        <div class="section-intro">
+          <p class="eyebrow">Positioning</p>
+          <h2 id="boundary-title">A compiler for PHP, not a wrapper around PHP.</h2>
+          <p>
+            The current live site makes this distinction repeatedly, and it is the right instinct.
+            elephc is interesting precisely because it draws a clean technical boundary: code inside
+            the supported subset becomes native code, and code outside it does not compile.
+          </p>
+        </div>
+
+        <div class="compare-table" role="table" aria-label="How elephc differs from other approaches">
+          {comparisonRows.map((row) => (
+            <div class={`compare-row ${row.label === "elephc" ? "compare-row-current" : ""}`} role="row">
+              <div role="cell" class="compare-label">{row.label}</div>
+              <div role="cell" class="compare-detail">{row.detail}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="section pipeline" id="pipeline" aria-labelledby="pipeline-title">
+        <div class="pipeline-header">
+          <p class="eyebrow">How it works</p>
+          <h2 id="pipeline-title">A real compiler pipeline, explained with the artifacts it produces.</h2>
+          <p>
+            elephc already ships enough machinery that the pipeline is worth showing directly instead
+            of flattening into marketing copy. Each stage removes ambiguity and gets the program closer
+            to the machine.
+          </p>
+        </div>
+
+        <div class="pipeline-grid">
+          {pipelineStages.map((stage) => (
+            <article class="stage-card">
+              <div class="stage-meta">
+                <span class="stage-index">{stage.stage}</span>
+                <h3>{stage.title}</h3>
+              </div>
+              <p class="stage-summary">{stage.summary}</p>
+              <pre><code>{stage.snippet}</code></pre>
+              <p class="stage-footer">{stage.footer}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="section subset" id="subset" aria-labelledby="subset-title">
+        <div class="section-intro">
+          <p class="eyebrow">Supported subset</p>
+          <h2 id="subset-title">The constraint is the product.</h2>
+          <p>
+            elephc is not trying to hide the fact that it compiles a static subset. It turns that
+            decision into leverage: clearer rules, stronger analysis, inspectable output, and room for
+            compiler-oriented extensions that ordinary PHP does not have.
+          </p>
+        </div>
+
+        <div class="subset-columns">
+          <div class="support-grid">
+            {supportBlocks.map((block) => (
+              <article class="support-card">
+                <h3>{block.title}</h3>
+                <ul>
+                  {block.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </article>
+            ))}
+          </div>
+
+          <aside class="limits-card" aria-labelledby="limits-title">
+            <h3 id="limits-title">Compiler boundary</h3>
+            <ul>
+              {limits.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+            <p>
+              That tradeoff is why the generated binary has no hidden PHP runtime dependency and why
+              the assembly output is worth reading.
+            </p>
+          </aside>
+        </div>
+
+        <div class="extension-strip" aria-labelledby="extensions-title">
+          <div class="section-intro compact">
+            <p class="eyebrow">Compiler extensions</p>
+            <h3 id="extensions-title">Extra tools for systems-facing PHP.</h3>
+          </div>
+
+          <div class="extension-grid">
+            {extensionBlocks.map((block) => (
+              <article class="extension-card">
+                <h4>{block.title}</h4>
+                <p>{block.description}</p>
+                <pre><code>{block.snippet}</code></pre>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="section proof" id="proof" aria-labelledby="proof-title">
+        <div class="section-intro">
+          <p class="eyebrow">Proof</p>
+          <h2 id="proof-title">The DOOM renderer is not a gimmick. It is the argument.</h2>
+          <p>
+            The current site leads with the 3D engine because it should. A compiler landing page earns
+            trust by proving the compiler can carry real structure, real data movement, and real frame-to-frame work.
+          </p>
+        </div>
+
+        <div class="proof-layout">
+          <figure class="proof-media">
+            <video
+              controls
+              muted
+              playsinline
+              preload="metadata"
+              poster="https://raw.githubusercontent.com/illegalstudio/elephc/main/showcases/doom/demo.gif"
+              aria-describedby="doom-caption"
+            >
+              <source
+                src="https://media.nahi.me/illegalstudio/elephc/elephc-doom-3d-movement-4.mp4"
+                type="video/mp4"
+              />
+            </video>
+            <figcaption id="doom-caption">
+              A DOOM-style 3D renderer written in PHP, compiled by elephc into a native binary.
+            </figcaption>
+          </figure>
+
+          <div class="proof-details">
+            <article class="proof-card">
+              <h3>What it proves</h3>
+              <ul>
+                {proofPoints.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </article>
+
+            <article class="proof-card">
+              <h3>Why this matters</h3>
+              <p>
+                This is the line skeptical developers care about: not whether elephc can print
+                <code>Hello, World!</code>, but whether it can hold together under geometry, memory
+                layout, control flow, FFI, and a program shape that would immediately expose a fake compiler.
+              </p>
+              <div class="proof-actions">
+                <a
+                  class="button button-ghost"
+                  href="https://github.com/illegalstudio/elephc/tree/main/showcases/doom"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Read the DOOM source
+                </a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section start" id="start" aria-labelledby="start-title">
+        <div class="section-intro">
+          <p class="eyebrow">Get started</p>
+          <h2 id="start-title">Enough context to try it tonight.</h2>
+          <p>
+            The live page already keeps installation close to the pitch. That is worth preserving.
+            A developer should be able to go from curiosity to first compile without leaving home.
+          </p>
+        </div>
+
+        <div class="start-layout">
+          <div class="install-grid">
+            {installCards.map((card) => (
+              <article class="install-card">
+                <h3>{card.title}</h3>
+                <pre><code>{card.body}</code></pre>
+              </article>
+            ))}
+          </div>
+
+          <article class="hello-card">
+            <div class="hello-header">
+              <h3>First file</h3>
+              <span>hello.php</span>
+            </div>
+            <pre><code>{`<?php
+function banner(string $name): string {
+    return "Hello, " . $name . "!";
+}
+
+echo banner("elephc") . "\\n";`}</code></pre>
+            <div class="hello-meta">
+              <p>Requirements: Rust toolchain, host assembler, host linker.</p>
+              <p>
+                Targets today: macOS ARM64, Linux ARM64, Linux x86_64. CLI flags already include
+                <code>--emit-asm</code>, <code>--source-map</code>, and <code>--timings</code>.
+              </p>
+              <p class="hello-note">Want confidence in the project state? Run <code>cargo test</code> and watch the 1800+ suite pass.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section roadmap" id="roadmap" aria-labelledby="roadmap-title">
+        <div class="section-intro">
+          <p class="eyebrow">Roadmap snapshot</p>
+          <h2 id="roadmap-title">Close enough to v1.0.0 that the shape is visible.</h2>
+          <p>
+            The current home page lists the full release history. For the redesign, the better move is
+            to compress it into a timeline that shows momentum: showcase, portability, optimizer work,
+            integration path, production target.
+          </p>
+        </div>
+
+        <div class="roadmap-track">
+          {roadmap.map((item) => (
+            <article class={`roadmap-card ${item.current ? "roadmap-card-current" : ""}`}>
+              <div class="roadmap-label">{item.label}</div>
+              <h3>{item.title}</h3>
+              <p>{item.note}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div>
+          <p class="footer-title">elephc</p>
+          <p class="footer-copy">
+            An open-source compiler for a static subset of PHP. Native assembly out. Standalone binaries today.
+            Libraries and a PHP extension bridge on the roadmap.
+          </p>
+        </div>
+
+        <div>
+          <p class="footer-title">Project</p>
+          <div class="footer-links">
+            <a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noreferrer">GitHub</a>
+            <a href="https://github.com/illegalstudio/elephc/releases" target="_blank" rel="noreferrer">Releases</a>
+            <a href="https://github.com/illegalstudio/elephc/tree/main/docs" target="_blank" rel="noreferrer">Docs</a>
+            <a href="https://github.com/illegalstudio/elephc/blob/main/LICENSE" target="_blank" rel="noreferrer">MIT License</a>
+          </div>
+        </div>
+
+        <div>
+          <p class="footer-title">Community</p>
+          <div class="footer-links">
+            <a href="https://github.com/illegalstudio/elephc/issues" target="_blank" rel="noreferrer">Issues</a>
+            <a href="https://github.com/sponsors/nahime0" target="_blank" rel="noreferrer">Sponsor</a>
+            <a href="https://illegal.studio" target="_blank" rel="noreferrer">Illegal Studio</a>
+            <a href="https://nahi.me" target="_blank" rel="noreferrer">Vincenzo Petrucci</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>{version} / optimizer: folding, propagation, DCE</p>
+        <p>macOS ARM64, Linux ARM64, Linux x86_64</p>
+      </div>
+    </footer>
+  </body>
 </html>
+
+<style is:global>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d10;
+    --bg-soft: #12161b;
+    --bg-panel: rgba(18, 22, 27, 0.92);
+    --bg-panel-strong: rgba(12, 15, 19, 0.96);
+    --line: rgba(232, 214, 184, 0.14);
+    --line-strong: rgba(232, 214, 184, 0.28);
+    --text: #f3ede2;
+    --text-soft: #b9b2a4;
+    --text-dim: #8d8a84;
+    --accent: #deb565;
+    --accent-soft: rgba(222, 181, 101, 0.12);
+    --signal: #78d79a;
+    --signal-soft: rgba(120, 215, 154, 0.14);
+    --shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+    --radius: 24px;
+    --radius-sm: 18px;
+    --content: 1220px;
+    --mono: "JetBrains Mono", "SFMono-Regular", "Cascadia Code", "IBM Plex Mono", monospace;
+    --serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", serif;
+    --sans: "Avenir Next", "Segoe UI", sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background:
+      radial-gradient(circle at top, rgba(222, 181, 101, 0.1), transparent 28%),
+      linear-gradient(180deg, rgba(222, 181, 101, 0.03), transparent 18%),
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px),
+      var(--bg);
+    background-size: auto, auto, 48px 48px, 48px 48px, auto;
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 12%),
+      repeating-linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.015),
+        rgba(255, 255, 255, 0.015) 1px,
+        transparent 1px,
+        transparent 4px
+      );
+    mix-blend-mode: soft-light;
+    opacity: 0.36;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  code,
+  pre,
+  .brand-note,
+  .eyebrow,
+  .roadmap-label,
+  .stage-index,
+  .panel-heading,
+  .footer-title,
+  .compare-label {
+    font-family: var(--mono);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 0.75rem;
+    transition: top 0.2s ease;
+  }
+
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  .site-header,
+  .section,
+  .site-footer {
+    padding-left: clamp(1rem, 2vw, 2rem);
+    padding-right: clamp(1rem, 2vw, 2rem);
+  }
+
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(18px);
+    background: rgba(11, 13, 16, 0.82);
+    border-bottom: 1px solid rgba(232, 214, 184, 0.08);
+  }
+
+  .site-nav,
+  .hero,
+  .section,
+  .site-footer {
+    max-width: var(--content);
+    margin: 0 auto;
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .brand-mark {
+    font-family: var(--mono);
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+  }
+
+  .brand-note {
+    color: var(--text-dim);
+    font-size: 0.73rem;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+    color: var(--text-soft);
+  }
+
+  .nav-links a {
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -0.25rem;
+    width: 100%;
+    height: 1px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.2s ease;
+  }
+
+  .nav-links a:hover::after,
+  .nav-links a:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: clamp(2rem, 4vw, 4rem);
+    padding: clamp(4rem, 8vw, 8rem) 0 4rem;
+    align-items: start;
+  }
+
+  .hero-copy h1,
+  .section-intro h2,
+  .roadmap-card h3,
+  .proof-card h3,
+  .support-card h3,
+  .install-card h3,
+  .hello-header h3,
+  .limits-card h3,
+  .extension-card h4,
+  .stage-meta h3 {
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: -0.03em;
+  }
+
+  .eyebrow {
+    margin: 0 0 1rem;
+    color: var(--accent);
+    font-size: 0.78rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .hero-copy h1 {
+    max-width: 11ch;
+    font-size: clamp(3.2rem, 8vw, 7rem);
+    line-height: 0.9;
+    font-family: var(--serif);
+  }
+
+  .hero-copy h1 span {
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .hero-lead,
+  .section-intro p,
+  .proof-card p,
+  .footer-copy,
+  .hello-meta p {
+    color: var(--text-soft);
+    font-size: clamp(1rem, 1.8vw, 1.12rem);
+    max-width: 66ch;
+  }
+
+  .hero-actions,
+  .proof-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 2rem;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.95rem 1.35rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-weight: 600;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .button:hover,
+  .button:focus-visible {
+    transform: translateY(-1px);
+  }
+
+  .button-solid {
+    background: var(--accent);
+    color: #101010;
+  }
+
+  .button-ghost {
+    border-color: var(--line-strong);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  .hero-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 2.5rem 0 0;
+  }
+
+  .hero-facts div,
+  .panel,
+  .compare-row,
+  .stage-card,
+  .support-card,
+  .limits-card,
+  .extension-card,
+  .proof-card,
+  .install-card,
+  .hello-card,
+  .roadmap-card {
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent), var(--bg-panel);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+  }
+
+  .hero-facts div {
+    padding: 1rem;
+  }
+
+  .hero-facts dt {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-facts dd {
+    margin: 0.4rem 0 0;
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1;
+  }
+
+  .hero-facts p {
+    margin: 0.7rem 0 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+
+  .hero-board {
+    position: relative;
+    padding: 1.2rem;
+    border: 1px solid var(--line-strong);
+    border-radius: calc(var(--radius) + 0.5rem);
+    background:
+      radial-gradient(circle at top right, rgba(120, 215, 154, 0.1), transparent 28%),
+      radial-gradient(circle at bottom left, rgba(222, 181, 101, 0.08), transparent 26%),
+      rgba(8, 10, 13, 0.96);
+    box-shadow:
+      0 0 0 1px rgba(222, 181, 101, 0.06),
+      0 28px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .board-ribbon {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .panel {
+    overflow: hidden;
+    background: var(--bg-panel-strong);
+  }
+
+  .panel-heading,
+  .hello-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .panel pre,
+  .stage-card pre,
+  .extension-card pre,
+  .install-card pre,
+  .hello-card pre {
+    margin: 0;
+    padding: 1rem;
+    overflow-x: auto;
+    color: var(--text);
+    font-size: 0.88rem;
+    line-height: 1.75;
+  }
+
+  .panel ul,
+  .support-card ul,
+  .limits-card ul,
+  .proof-card ul,
+  .footer-links {
+    margin: 0;
+    padding: 1rem 1rem 1rem 1.2rem;
+  }
+
+  .panel-targets ul {
+    list-style: square;
+    color: var(--text-soft);
+  }
+
+  .section {
+    padding-top: clamp(4rem, 7vw, 7rem);
+    padding-bottom: clamp(4rem, 7vw, 7rem);
+    border-top: 1px solid rgba(232, 214, 184, 0.08);
+  }
+
+  .section-intro {
+    margin-bottom: 2rem;
+  }
+
+  .section-intro h2 {
+    max-width: 14ch;
+    font-size: clamp(2.5rem, 5vw, 4.6rem);
+    line-height: 0.98;
+    font-family: var(--serif);
+  }
+
+  .compact h3 {
+    font-family: var(--serif);
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
+    font-weight: 400;
+    margin: 0;
+  }
+
+  .compare-table {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1.2rem;
+  }
+
+  .compare-row-current {
+    border-color: rgba(120, 215, 154, 0.32);
+    background:
+      linear-gradient(180deg, rgba(120, 215, 154, 0.08), transparent),
+      var(--bg-panel);
+  }
+
+  .compare-label {
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+  }
+
+  .compare-detail {
+    color: var(--text-soft);
+  }
+
+  .pipeline-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .stage-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    overflow: hidden;
+  }
+
+  .stage-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1rem 0;
+  }
+
+  .stage-index {
+    color: var(--accent);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+  }
+
+  .stage-summary,
+  .stage-footer,
+  .extension-card p,
+  .roadmap-card p,
+  .support-card li,
+  .limits-card li,
+  .proof-card li,
+  .proof-card p,
+  .footer-links a,
+  .compare-detail {
+    font-size: 0.96rem;
+  }
+
+  .stage-summary,
+  .stage-footer,
+  .extension-card p,
+  .proof-card p,
+  .roadmap-card p,
+  .hello-note {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .stage-summary,
+  .extension-card p,
+  .proof-card p,
+  .roadmap-card p,
+  .hello-meta p,
+  .footer-copy {
+    color: var(--text-soft);
+  }
+
+  .stage-footer,
+  .hello-note {
+    color: var(--text-dim);
+    margin-top: auto;
+    padding-bottom: 1rem;
+  }
+
+  .subset-columns,
+  .proof-layout,
+  .start-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+
+  .support-grid,
+  .extension-grid,
+  .install-grid,
+  .footer-grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .support-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .support-card,
+  .limits-card,
+  .proof-card,
+  .install-card,
+  .hello-card,
+  .roadmap-card,
+  .extension-card {
+    overflow: hidden;
+  }
+
+  .support-card h3,
+  .limits-card h3,
+  .proof-card h3,
+  .install-card h3,
+  .extension-card h4,
+  .roadmap-card h3 {
+    padding: 1rem 1rem 0;
+    font-size: 1.1rem;
+  }
+
+  .support-card ul,
+  .limits-card ul,
+  .proof-card ul {
+    color: var(--text-soft);
+  }
+
+  .support-card li,
+  .limits-card li,
+  .proof-card li {
+    margin-bottom: 0.7rem;
+  }
+
+  .limits-card p {
+    padding: 0 1rem 1rem;
+    color: var(--text-dim);
+  }
+
+  .extension-strip {
+    margin-top: 2rem;
+  }
+
+  .extension-grid,
+  .install-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .extension-card h4 {
+    color: var(--accent);
+  }
+
+  .proof-media {
+    margin: 0;
+    border: 1px solid rgba(222, 181, 101, 0.24);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: #040506;
+    box-shadow: var(--shadow);
+  }
+
+  .proof-media figcaption {
+    padding: 1rem 1.2rem 1.2rem;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+  }
+
+  .proof-details {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .start-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.9fr);
+  }
+
+  .hello-meta {
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .hello-meta code,
+  .proof-card code {
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+
+  .roadmap-track {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .roadmap-card {
+    padding-bottom: 1rem;
+  }
+
+  .roadmap-card-current {
+    border-color: rgba(120, 215, 154, 0.4);
+    background:
+      linear-gradient(180deg, rgba(120, 215, 154, 0.08), transparent),
+      var(--bg-panel);
+  }
+
+  .roadmap-label {
+    display: inline-flex;
+    margin: 1rem 1rem 0.5rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 0.75rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .site-footer {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    border-top: 1px solid rgba(232, 214, 184, 0.08);
+  }
+
+  .footer-grid {
+    grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-title {
+    color: var(--accent);
+    margin: 0 0 0.7rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .footer-links {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer-links a {
+    color: var(--text-soft);
+  }
+
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(232, 214, 184, 0.08);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 1080px) {
+    .hero,
+    .subset-columns,
+    .proof-layout,
+    .start-layout,
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .pipeline-grid,
+    .roadmap-track {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .support-grid,
+    .extension-grid,
+    .install-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .site-nav {
+      align-items: start;
+      flex-direction: column;
+    }
+
+    .nav-links {
+      justify-content: flex-start;
+    }
+
+    .hero {
+      padding-top: 3rem;
+    }
+
+    .hero-facts,
+    .board-grid,
+    .pipeline-grid,
+    .support-grid,
+    .extension-grid,
+    .install-grid,
+    .roadmap-track,
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .compare-row {
+      grid-template-columns: 1fr;
+    }
+
+    .section-intro h2,
+    .hero-copy h1 {
+      max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
