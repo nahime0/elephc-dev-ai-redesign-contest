@@ -1,0 +1,368 @@
+---
+const installCmd = "brew install illegalstudio/tap/elephc";
+---
+
+<section class="hero" aria-labelledby="hero-title" id="main">
+  <div class="container hero__inner">
+
+    <!-- LEFT: copy -->
+    <div class="hero__copy">
+      <div class="eyebrow">
+        <span class="tag">● compiler</span>
+        <span class="sep"></span>
+        <span>v0.19.7 · MIT · 1,800+ tests passing</span>
+      </div>
+
+      <h1 id="hero-title" class="h-display hero__title">
+        PHP in.<br />
+        Native assembly out.<br />
+        <span class="mark-accent">Nothing in between.</span>
+      </h1>
+
+      <p class="lead hero__lead">
+        <strong class="hero__strong">elephc</strong> is a from-scratch compiler that lowers a static subset of PHP
+        directly to native assembly, then assembles and links a standalone binary.
+        No interpreter. No VM. No Zend Engine. No opcode fallback.
+      </p>
+
+      <div class="hero__ctas">
+        <button class="install" data-copy={installCmd} aria-label="Copy install command to clipboard">
+          <span class="install__prompt" aria-hidden="true">$</span>
+          <code class="install__cmd"><span class="kw">brew</span> install illegalstudio/tap/elephc</code>
+          <span class="install__copy" data-copy-label>copy</span>
+        </button>
+        <a href="#start" class="btn btn-ghost">
+          Read the docs
+          <svg class="icn" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="square"/></svg>
+        </a>
+      </div>
+
+      <dl class="hero__stats" aria-label="Project stats">
+        <div><dt>Tests passing</dt><dd>1,800<span class="mark-dim">+</span></dd></div>
+        <div><dt>Built-ins</dt><dd>220<span class="mark-dim">+</span></dd></div>
+        <div><dt>Data types</dt><dd>10</dd></div>
+        <div><dt>Runtime deps</dt><dd>0</dd></div>
+      </dl>
+    </div>
+
+    <!-- RIGHT: compilation window -->
+    <aside class="hero__window" aria-label="Compilation example: hello.php to ARM64 assembly">
+      <header class="cw__top">
+        <div class="cw__tabs">
+          <span class="cw__tab is-active">hello.php</span>
+          <svg class="cw__arrow" viewBox="0 0 24 12" aria-hidden="true"><path d="M0 6h22M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="square"/></svg>
+          <span class="cw__tab is-out">hello <span class="cw__arch">·arm64</span></span>
+        </div>
+        <div class="cw__meta">
+          <span class="cw__dot" aria-hidden="true"></span>
+          <span>compiled in 42 ms</span>
+        </div>
+      </header>
+
+      <div class="cw__grid">
+        <!-- PHP SOURCE PANE -->
+        <section class="cw__pane cw__pane--src">
+          <div class="cw__pane-h">
+            <span class="cw__pane-label">input · <span class="mono">.php</span></span>
+            <span class="cw__pane-stage">stage 01 · parse</span>
+          </div>
+          <pre class="cw__code"><code><span class="ln">1</span><span class="com">&lt;?php</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="kw">function</span> <span class="fn">fib</span>(<span class="ty">int</span> <span class="var">$n</span>)<span class="p">:</span> <span class="ty">int</span> <span class="p">{</span>
+<span class="ln">4</span>    <span class="kw">if</span> (<span class="var">$n</span> <span class="op">&lt;</span> <span class="num">2</span>) <span class="kw">return</span> <span class="var">$n</span><span class="p">;</span>
+<span class="ln">5</span>    <span class="kw">return</span> <span class="fn">fib</span>(<span class="var">$n</span> <span class="op">-</span> <span class="num">1</span>) <span class="op">+</span> <span class="fn">fib</span>(<span class="var">$n</span> <span class="op">-</span> <span class="num">2</span>)<span class="p">;</span>
+<span class="ln">6</span><span class="p">}</span>
+<span class="ln">7</span>
+<span class="ln">8</span><span class="kw">echo</span> <span class="fn">fib</span>(<span class="num">30</span>)<span class="p">,</span> <span class="str">"\n"</span><span class="p">;</span>
+</code></pre>
+        </section>
+
+        <!-- DIVIDER -->
+        <div class="cw__div" role="presentation">
+          <span class="cw__div-arrow" aria-hidden="true">↓</span>
+          <span class="cw__div-label">parse · type-check · lower · assemble · link</span>
+          <span class="cw__div-arrow" aria-hidden="true">↓</span>
+        </div>
+
+        <!-- ASM OUTPUT PANE -->
+        <section class="cw__pane cw__pane--asm">
+          <div class="cw__pane-h">
+            <span class="cw__pane-label">output · <span class="mono">aarch64</span></span>
+            <span class="cw__pane-stage">stage 03 · lower</span>
+          </div>
+          <pre class="cw__code"><code><span class="dir">.globl</span> _fib
+<span class="dir">.p2align</span>  <span class="num">2</span>
+_fib<span class="p">:</span>
+    stp     <span class="reg">x29</span><span class="p">,</span> <span class="reg">x30</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">,</span> <span class="num">#-32</span><span class="p">]!</span>
+    cmp     <span class="reg">w0</span><span class="p">,</span> <span class="num">#2</span>
+    b.lt    .Lbase
+    str     <span class="reg">w0</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">,</span> <span class="num">#16</span><span class="p">]</span>
+    sub     <span class="reg">w0</span><span class="p">,</span> <span class="reg">w0</span><span class="p">,</span> <span class="num">#1</span>
+    bl      _fib
+    ldr     <span class="reg">w1</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">,</span> <span class="num">#16</span><span class="p">]</span>
+    str     <span class="reg">w0</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">,</span> <span class="num">#20</span><span class="p">]</span>
+    sub     <span class="reg">w0</span><span class="p">,</span> <span class="reg">w1</span><span class="p">,</span> <span class="num">#2</span>
+    bl      _fib
+    ldr     <span class="reg">w1</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">,</span> <span class="num">#20</span><span class="p">]</span>
+    add     <span class="reg">w0</span><span class="p">,</span> <span class="reg">w0</span><span class="p">,</span> <span class="reg">w1</span>
+.Lbase<span class="p">:</span>
+    ldp     <span class="reg">x29</span><span class="p">,</span> <span class="reg">x30</span><span class="p">,</span> <span class="p">[</span><span class="reg">sp</span><span class="p">],</span> <span class="num">#32</span>
+    ret
+</code></pre>
+        </section>
+      </div>
+
+      <footer class="cw__foot">
+        <div class="cw__foot-item"><span>link</span><span>Mach-O · 14 KB</span></div>
+        <div class="cw__foot-item"><span>runtime</span><span>0 deps</span></div>
+        <div class="cw__foot-item"><span>$ ./hello</span><span class="ok-l">832040</span></div>
+      </footer>
+    </aside>
+  </div>
+
+  <div class="hero__bg" aria-hidden="true"></div>
+</section>
+
+<style>
+  .hero {
+    padding-block: clamp(60px, 9vw, 120px) clamp(72px, 10vw, 140px);
+    border-top: 0 !important;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(233, 166, 106, 0.06), transparent 52%),
+      linear-gradient(transparent 0 39px, var(--line-soft) 39px 40px) 0 0/100% 40px,
+      linear-gradient(90deg, transparent 0 39px, var(--line-soft) 39px 40px) 0 0/40px 100%;
+    mask-image: linear-gradient(180deg, transparent 0, #000 18%, #000 84%, transparent 100%);
+    opacity: 0.55;
+    z-index: 0;
+  }
+
+  .hero__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+  }
+
+  @media (max-width: 980px) {
+    .hero__inner { grid-template-columns: 1fr; gap: 56px; }
+  }
+
+  .hero__copy { max-width: 640px; }
+  .hero__title { margin-top: 26px; margin-bottom: 26px; }
+  .hero__lead { margin-bottom: 36px; }
+  .hero__strong { color: var(--fg); font-weight: 600; }
+
+  /* --- install + CTAs --- */
+  .hero__ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .install {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 12px 16px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line-bright);
+    border-radius: var(--r-md);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    transition: border-color 140ms ease, background 140ms ease;
+  }
+  .install:hover { border-color: var(--accent-line); background: var(--bg-elev-2); }
+  .install__prompt { color: var(--fg-mute); }
+  .install__cmd { color: var(--fg); white-space: nowrap; }
+  .install__cmd .kw { color: var(--accent); }
+  .install__copy {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-bright);
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+  }
+  .install[data-copied="1"] .install__copy {
+    color: var(--accent);
+    border-color: var(--accent-line);
+    background: var(--accent-bg);
+  }
+
+  /* --- stats strip --- */
+  .hero__stats {
+    margin: 0;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
+  }
+  .hero__stats > div {
+    padding: 2px 16px 2px 0;
+    border-right: 1px solid var(--line-soft);
+  }
+  .hero__stats > div:last-child { border-right: 0; }
+  .hero__stats dt {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+  }
+  .hero__stats dd {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: clamp(22px, 2vw, 26px);
+    color: var(--fg);
+    letter-spacing: -0.02em;
+  }
+
+  /* --- compilation window --- */
+  .hero__window {
+    position: relative;
+    background: var(--bg-elev);
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.03) inset,
+      0 30px 60px -30px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+  }
+
+  .cw__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+  .cw__tabs { display: flex; align-items: center; gap: 10px; }
+  .cw__tab {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--fg-mute);
+    padding: 4px 9px;
+    border-radius: var(--r-sm);
+    border: 1px solid transparent;
+  }
+  .cw__tab.is-active { color: var(--fg); background: var(--bg-elev-2); border-color: var(--line-bright); }
+  .cw__tab.is-out { color: var(--accent); background: var(--accent-bg); border-color: var(--accent-line); }
+  .cw__arch { color: var(--fg-mute); }
+  .cw__arrow { color: var(--fg-mute); }
+
+  .cw__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--fg-mute);
+  }
+  .cw__dot {
+    width: 7px; height: 7px; border-radius: 999px;
+    background: var(--ok);
+    box-shadow: 0 0 0 3px rgba(150, 184, 139, 0.14);
+  }
+
+  .cw__grid {
+    display: grid;
+    grid-template-rows: auto auto auto;
+  }
+
+  .cw__pane {
+    padding: 12px 16px 14px;
+    background: var(--bg-elev);
+  }
+  .cw__pane--asm { background: var(--bg-soft); }
+
+  .cw__pane-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .cw__pane-label .mono { color: var(--fg-dim); text-transform: none; }
+  .cw__pane-stage { color: var(--accent); }
+
+  .cw__code {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--fg);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-bright) transparent;
+  }
+  .cw__code .ln { display: inline-block; width: 2ch; color: var(--fg-faint); margin-right: 14px; text-align: right; user-select: none; }
+
+  .cw__div {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 16px;
+    border-block: 1px solid var(--line);
+    background: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--fg-faint);
+  }
+  .cw__div-label { text-align: center; color: var(--fg-mute); }
+  .cw__div-arrow { color: var(--accent); font-size: 14px; }
+  .cw__div-arrow:first-child { text-align: right; display: none; }
+  .cw__div-arrow:last-child { text-align: left; display: none; }
+
+  .cw__foot {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+  .cw__foot-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 14px;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    border-right: 1px solid var(--line);
+    color: var(--fg-mute);
+  }
+  .cw__foot-item:last-child { border-right: 0; }
+  .cw__foot-item span:last-child { color: var(--fg); }
+  .cw__foot-item .ok-l { color: var(--ok); }
+
+  @media (max-width: 560px) {
+    .cw__foot { grid-template-columns: 1fr; }
+    .cw__foot-item { border-right: 0; border-bottom: 1px solid var(--line); }
+    .cw__foot-item:last-child { border-bottom: 0; }
+    .hero__stats { grid-template-columns: repeat(2, 1fr); row-gap: 16px; }
+    .hero__stats > div:nth-child(2) { border-right: 0; }
+  }
+</style>

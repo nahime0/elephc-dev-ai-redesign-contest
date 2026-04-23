@@ -1,0 +1,389 @@
+---
+const types = [
+  { name: "int",       note: "64-bit signed" },
+  { name: "float",     note: "IEEE 754 double" },
+  { name: "bool",      note: "true / false" },
+  { name: "string",    note: "UTF-8, immutable" },
+  { name: "array",     note: "ordered, typed" },
+  { name: "object",    note: "class instance" },
+  { name: "class",     note: "nominal, final-by-default" },
+  { name: "enum",      note: "int or string-backed" },
+  { name: "buffer<T>", note: "packed, fixed-size" },
+  { name: "void",      note: "return only" },
+];
+
+const builtins = [
+  {
+    cat: "strings",
+    count: "48 fns",
+    sample: ["strlen", "substr", "str_replace", "sprintf", "str_split", "strpos"],
+  },
+  {
+    cat: "arrays",
+    count: "42 fns",
+    sample: ["count", "array_map", "array_filter", "array_reduce", "in_array", "array_keys"],
+  },
+  {
+    cat: "math",
+    count: "36 fns",
+    sample: ["abs", "min", "max", "floor", "sqrt", "intdiv"],
+  },
+  {
+    cat: "types",
+    count: "28 fns",
+    sample: ["is_int", "is_string", "gettype", "intval", "floatval", "strval"],
+  },
+  {
+    cat: "io",
+    count: "38 fns",
+    sample: ["fopen", "fread", "fwrite", "file_get_contents", "echo", "print"],
+  },
+  {
+    cat: "system",
+    count: "28 fns",
+    sample: ["getenv", "time", "microtime", "exit", "getcwd", "argv"],
+  },
+];
+
+const platforms = [
+  { os: "macOS",  arch: "ARM64",  status: "stable",    note: "primary dev target" },
+  { os: "Linux",  arch: "ARM64",  status: "stable",    note: "v0.18.0" },
+  { os: "Linux",  arch: "x86_64", status: "stable",    note: "v0.18.0" },
+  { os: "Linux",  arch: "RISC-V", status: "planned",   note: "post v1.0" },
+  { os: "Windows", arch: "x86_64", status: "exploring", note: "post v1.0" },
+];
+
+const subsetIn = [
+  "Static typing across every expression",
+  "Classes, interfaces, namespaces",
+  "Enums (int & string-backed)",
+  "Exceptions: try / catch / finally / throw",
+  "Typed arrays, strings, buffer<T>",
+  "ifdef compile-time conditions",
+  "Composition & static dispatch",
+];
+
+const subsetOut = [
+  "eval() and runtime code generation",
+  "The mixed type (everything must resolve)",
+  "Magic methods: __get, __call, __set",
+  "Runtime reflection & introspection",
+  "Superglobals: $_GET, $_POST, $_SESSION",
+  "Zend extensions (ext/) — out by design",
+  "Dynamic include() of arbitrary strings",
+];
+---
+
+<section class="feat" id="features" aria-labelledby="feat-title">
+  <div class="container">
+    <header class="feat__head">
+      <div class="eyebrow">
+        <span class="tag">04 / 07</span>
+        <span class="sep"></span>
+        <span>what's supported</span>
+      </div>
+      <h2 id="feat-title" class="h-section feat__title">
+        A small surface, taken seriously.<br />
+        <span class="mark-dim">Ten types. Two-hundred-and-twenty-something built-ins. Three architectures.</span>
+      </h2>
+    </header>
+
+    <div class="feat__grid">
+
+      <!-- types -->
+      <article class="feat__card">
+        <header class="feat__card-h">
+          <span class="feat__k mono">types</span>
+          <span class="feat__count mono">10 total</span>
+        </header>
+        <ul class="types">
+          {types.map(t => (
+            <li>
+              <code class="types__n">{t.name}</code>
+              <span class="types__note">{t.note}</span>
+            </li>
+          ))}
+        </ul>
+        <footer class="feat__foot mono">
+          no <span class="mark-strike">mixed</span> — ever.
+        </footer>
+      </article>
+
+      <!-- builtins -->
+      <article class="feat__card">
+        <header class="feat__card-h">
+          <span class="feat__k mono">built-ins</span>
+          <span class="feat__count mono">220+ total</span>
+        </header>
+        <ul class="bins">
+          {builtins.map(b => (
+            <li>
+              <div class="bins__h">
+                <code class="bins__cat">{b.cat}/</code>
+                <span class="bins__n mono">{b.count}</span>
+              </div>
+              <div class="bins__sample mono">
+                {b.sample.map((f, i) => (
+                  <>
+                    <span>{f}()</span>
+                    {i < b.sample.length - 1 && <span class="bins__sep">·</span>}
+                  </>
+                ))}
+              </div>
+            </li>
+          ))}
+        </ul>
+        <footer class="feat__foot mono">
+          implementations live in <code class="feat__code">src/runtime/</code>.
+        </footer>
+      </article>
+
+      <!-- platforms -->
+      <article class="feat__card">
+        <header class="feat__card-h">
+          <span class="feat__k mono">platforms</span>
+          <span class="feat__count mono">3 stable</span>
+        </header>
+        <table class="plat">
+          <thead>
+            <tr>
+              <th scope="col">os</th>
+              <th scope="col">arch</th>
+              <th scope="col">status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {platforms.map(p => (
+              <tr>
+                <td>{p.os}</td>
+                <td class="mono mark-dim">{p.arch}</td>
+                <td>
+                  <span class={`plat__pill plat__pill--${p.status}`}>
+                    <span class="plat__dot"></span>
+                    {p.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <footer class="feat__foot mono">
+          host toolchain: <code class="feat__code">as</code> · <code class="feat__code">ld</code>
+        </footer>
+      </article>
+
+    </div>
+
+    <!-- subset explainer -->
+    <div class="subset">
+      <header class="subset__head">
+        <h3 class="h-sub subset__title">
+          The static subset, out loud.
+        </h3>
+        <p class="body subset__lead">
+          Some of PHP's most loved features are the same ones that make ahead-of-time compilation impossible.
+          elephc draws the line explicitly — so you know in advance what will compile, and what won't.
+        </p>
+      </header>
+
+      <div class="subset__grid">
+        <div class="subset__col">
+          <div class="subset__col-h">
+            <span class="subset__label subset__label--in">
+              <span class="subset__plus">+</span> compiles
+            </span>
+          </div>
+          <ul>
+            {subsetIn.map(x => <li class="tick">{x}</li>)}
+          </ul>
+        </div>
+        <div class="subset__col">
+          <div class="subset__col-h">
+            <span class="subset__label subset__label--out">
+              <span class="subset__minus">—</span> rejected
+            </span>
+          </div>
+          <ul>
+            {subsetOut.map(x => <li class="rej">{x}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .feat__head { max-width: 900px; margin-bottom: 56px; }
+  .feat__title { margin-top: 22px; max-width: 26ch; }
+  .feat__title .mark-dim { font-weight: 400; color: var(--fg-mute); font-size: 0.54em; display: inline-block; margin-top: 14px; line-height: 1.35; max-width: 46ch; letter-spacing: -0.02em; }
+
+  .feat__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 96px;
+  }
+  @media (max-width: 1080px) { .feat__grid { grid-template-columns: 1fr; gap: 16px; } }
+
+  .feat__card {
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 22px 22px 18px;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 520px;
+  }
+  .feat__card-h {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+  }
+  .feat__k {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .feat__count {
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.05em;
+  }
+  .feat__foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--fg-mute);
+  }
+  .feat__code {
+    background: var(--bg-soft);
+    color: var(--fg);
+    padding: 1px 5px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    font-size: 11.5px;
+  }
+
+  /* types list */
+  .types { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .types li { display: grid; grid-template-columns: 130px 1fr; align-items: baseline; gap: 14px; }
+  .types__n {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    color: var(--fg);
+    padding: 3px 8px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    justify-self: start;
+  }
+  .types__note { color: var(--fg-dim); font-size: 13.5px; }
+
+  /* built-ins list */
+  .bins { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+  .bins__h { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 3px; }
+  .bins__cat {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--fg);
+  }
+  .bins__n { font-size: 11px; color: var(--fg-mute); letter-spacing: 0.05em; }
+  .bins__sample {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    line-height: 1.55;
+  }
+  .bins__sep { color: var(--fg-faint); }
+
+  /* platforms */
+  .plat { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .plat thead th {
+    text-align: left;
+    padding: 0 10px 10px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .plat tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .plat tbody tr:last-child td { border-bottom: 0; }
+  .plat tbody td:first-child { color: var(--fg); }
+  .plat__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--line-bright);
+    color: var(--fg-dim);
+    letter-spacing: 0.04em;
+  }
+  .plat__dot { width: 6px; height: 6px; border-radius: 999px; background: var(--fg-mute); }
+  .plat__pill--stable { color: var(--accent); border-color: var(--accent-line); background: var(--accent-bg); }
+  .plat__pill--stable .plat__dot { background: var(--accent); }
+  .plat__pill--planned { color: var(--fg-dim); }
+  .plat__pill--exploring { color: var(--fg-mute); border-style: dashed; }
+
+  /* subset explainer */
+  .subset { border-top: 1px solid var(--line-bright); padding-top: 56px; }
+  .subset__head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 48px; align-items: end; margin-bottom: 36px; }
+  @media (max-width: 900px) { .subset__head { grid-template-columns: 1fr; gap: 18px; } }
+  .subset__title { color: var(--fg); max-width: 16ch; }
+  .subset__lead { color: var(--fg-dim); max-width: 60ch; }
+
+  .subset__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  @media (max-width: 720px) { .subset__grid { grid-template-columns: 1fr; } }
+
+  .subset__col {
+    padding: 24px 28px 28px;
+    border-right: 1px solid var(--line);
+  }
+  .subset__col:last-child { border-right: 0; border-top: 0; }
+  @media (max-width: 720px) {
+    .subset__col { border-right: 0; border-bottom: 1px solid var(--line); }
+    .subset__col:last-child { border-bottom: 0; }
+  }
+  .subset__col-h { margin-bottom: 16px; }
+  .subset__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid;
+  }
+  .subset__label--in { color: var(--accent); border-color: var(--accent-line); background: var(--accent-bg); }
+  .subset__label--out { color: var(--fg-mute); border-color: var(--line-bright); }
+  .subset__plus, .subset__minus { font-weight: 600; }
+
+  .subset__col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .subset__col li { font-family: var(--font-mono); font-size: 13px; color: var(--fg-dim); line-height: 1.5; }
+  .subset__col li.rej { color: var(--fg-mute); text-decoration: line-through; text-decoration-color: var(--fg-faint); }
+  .subset__col li.rej:hover { color: var(--fg-dim); }
+</style>

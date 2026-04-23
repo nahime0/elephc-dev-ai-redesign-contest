@@ -1,0 +1,249 @@
+---
+const milestones = [
+  { v: "0.12",   label: "Classes & method dispatch",               state: "done" },
+  { v: "0.14",   label: "Type inference & static overloading",     state: "done" },
+  { v: "0.16",   label: "Exceptions: try / catch / finally / throw", state: "done" },
+  { v: "0.17",   label: "Namespaces · ifdef · packed class · buffer<T>", state: "done" },
+  { v: "0.18",   label: "Linux support: ARM64 & x86_64",           state: "done" },
+  { v: "0.19",   label: "Switch CFG-lite reachability",            state: "done" },
+  { v: "0.19.7", label: "Optimizer: folding, propagation, DCE",    state: "now" },
+  { v: "0.20",   label: "Shared & static libraries",               state: "next" },
+  { v: "0.21",   label: "PHP extension bridge (native calls into elephc modules)", state: "next" },
+  { v: "0.22",   label: "Debugger support: DWARF symbols",         state: "next" },
+  { v: "1.0.0",  label: "Production-ready",                        state: "goal" },
+];
+const nowIdx = milestones.findIndex(m => m.state === "now");
+const progress = Math.round(((nowIdx + 1) / milestones.length) * 100);
+---
+
+<section class="rm" id="roadmap" aria-labelledby="rm-title">
+  <div class="container">
+    <header class="rm__head">
+      <div class="eyebrow">
+        <span class="tag">07 / 07</span>
+        <span class="sep"></span>
+        <span>the road to v1.0.0</span>
+      </div>
+      <h2 id="rm-title" class="h-section rm__title">
+        Currently at <span class="mark-accent">v0.19.7</span>.<br />
+        <span class="mark-dim">Here's what's left.</span>
+      </h2>
+    </header>
+
+    <div class="rm__grid">
+
+      <aside class="rm__side">
+        <div class="rm__big mono">v0.19.7</div>
+        <div class="rm__sub">Optimizer: fold · prop · dce</div>
+        <div class="rm__progress-wrap">
+          <div class="rm__progress-label mono">
+            <span>progress</span><span>{progress}%</span>
+          </div>
+          <div class="rm__progress" role="progressbar" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">
+            <span class="rm__progress-fill" style={`width:${progress}%`}></span>
+          </div>
+          <div class="rm__progress-ends mono">
+            <span>v0.1</span>
+            <span>v1.0</span>
+          </div>
+        </div>
+        <p class="rm__note">
+          Versioning is honest: nothing claims to be stable until it is.
+          The "1.0" line is drawn for <em>compile guarantees</em>,
+          not a marketing moment.
+        </p>
+      </aside>
+
+      <ol class="rm__list" role="list">
+        {milestones.map((m) => (
+          <li class={`rm__item rm__item--${m.state}`}>
+            <div class="rm__rail" aria-hidden="true">
+              <span class="rm__dot"></span>
+            </div>
+            <div class="rm__row">
+              <code class="rm__v mono">v{m.v}</code>
+              <div class="rm__label">{m.label}</div>
+              <span class="rm__state mono">{m.state === "done" ? "shipped" : m.state === "now" ? "current" : m.state === "next" ? "planned" : "target"}</span>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .rm__head { max-width: 780px; margin-bottom: 48px; }
+  .rm__title { margin-top: 22px; }
+
+  .rm__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    gap: 48px;
+  }
+  @media (max-width: 960px) { .rm__grid { grid-template-columns: 1fr; gap: 32px; } }
+
+  .rm__side {
+    position: sticky;
+    top: 90px;
+    align-self: start;
+  }
+  @media (max-width: 960px) { .rm__side { position: static; } }
+
+  .rm__big {
+    font-family: var(--font-mono);
+    font-size: clamp(34px, 3.4vw, 48px);
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .rm__sub {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    letter-spacing: 0.02em;
+  }
+  .rm__progress-wrap {
+    margin-top: 28px;
+    padding: 16px 16px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--bg-soft);
+  }
+  .rm__progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .rm__progress {
+    height: 4px;
+    background: var(--bg-elev);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .rm__progress-fill {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+    border-radius: 999px;
+  }
+  .rm__progress-ends {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10.5px;
+    color: var(--fg-faint);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+  .rm__note {
+    margin-top: 24px;
+    color: var(--fg-dim);
+    font-size: 13.5px;
+    line-height: 1.6;
+    max-width: 32ch;
+  }
+
+  /* --- list --- */
+  .rm__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .rm__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    padding: 0;
+    min-height: 56px;
+  }
+  .rm__rail {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .rm__rail::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    background: var(--line);
+  }
+  .rm__item:first-child .rm__rail::before { top: 50%; }
+  .rm__item:last-child  .rm__rail::before { bottom: 50%; }
+
+  .rm__dot {
+    position: relative;
+    z-index: 1;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 9px; height: 9px;
+    border-radius: 999px;
+    background: var(--bg);
+    box-shadow: inset 0 0 0 1.5px var(--fg-faint);
+  }
+  .rm__item--done .rm__dot { background: var(--fg-faint); box-shadow: none; }
+  .rm__item--done .rm__rail::before { background: var(--line-bright); }
+  .rm__item--now  .rm__dot {
+    width: 14px; height: 14px;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(233, 166, 106, 0.2);
+  }
+  .rm__item--goal .rm__dot { background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--accent); }
+
+  .rm__row {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 18px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .rm__item:last-child .rm__row { border-bottom: 0; }
+
+  @media (max-width: 620px) {
+    .rm__row { grid-template-columns: 1fr; gap: 4px; padding: 12px 0 16px; }
+  }
+
+  .rm__v {
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--bg-soft);
+    justify-self: start;
+  }
+  .rm__item--now .rm__v {
+    color: var(--accent);
+    border-color: var(--accent-line);
+    background: var(--accent-bg);
+  }
+  .rm__item--goal .rm__v { color: var(--accent-hi); border-color: var(--accent-line); }
+  .rm__item--done .rm__v { color: var(--fg-mute); }
+
+  .rm__label {
+    font-size: 14.5px;
+    color: var(--fg);
+    line-height: 1.5;
+  }
+  .rm__item--done .rm__label { color: var(--fg-dim); }
+  .rm__item--next .rm__label { color: var(--fg-dim); }
+
+  .rm__state {
+    font-size: 10.5px;
+    color: var(--fg-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .rm__item--now .rm__state { color: var(--accent); }
+  @media (max-width: 620px) { .rm__state { margin-top: 2px; } }
+</style>

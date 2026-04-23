@@ -1,0 +1,266 @@
+---
+---
+
+<section class="gs" id="start" aria-labelledby="gs-title">
+  <!-- hidden radios for install-tab switching -->
+  <input type="radio" name="gs-tab" id="gs-brew"  class="gs__radio" checked />
+  <input type="radio" name="gs-tab" id="gs-cargo" class="gs__radio" />
+  <input type="radio" name="gs-tab" id="gs-dl"    class="gs__radio" />
+
+  <div class="container">
+    <header class="gs__head">
+      <div class="eyebrow">
+        <span class="tag">06 / 07</span>
+        <span class="sep"></span>
+        <span>your first compile</span>
+      </div>
+      <h2 id="gs-title" class="h-section gs__title">
+        From intrigued to <span class="mark-accent">./hello</span> in one minute.
+      </h2>
+      <p class="lead gs__lead">
+        elephc builds standalone binaries for your host. No containers, no bundlers,
+        no global PHP install required at runtime.
+      </p>
+    </header>
+
+    <div class="gs__grid">
+
+      <!-- INSTALL -->
+      <div class="gs__panel">
+        <div class="gs__label mono"><span class="mark-accent">①</span> install</div>
+
+        <div class="gs__tabs" role="radiogroup" aria-label="Install method">
+          <label for="gs-brew"  class="gs__tab"><span class="mono">brew</span></label>
+          <label for="gs-cargo" class="gs__tab"><span class="mono">cargo</span></label>
+          <label for="gs-dl"    class="gs__tab"><span class="mono">download</span></label>
+        </div>
+
+        <div class="gs__tabpanels">
+
+          <div class="gs__tabpanel" data-tab="gs-brew">
+            <div class="code">
+              <div class="code__bar">
+                <span>macOS & Linuxbrew</span>
+                <button class="copy" data-copy={"brew install illegalstudio/tap/elephc"}>
+                  <span data-copy-label>copy</span>
+                </button>
+              </div>
+              <pre class="code__body"><span class="prompt">$</span> <span class="cmd">brew install illegalstudio/tap/elephc</span>
+<span class="out">==&gt; Fetching illegalstudio/tap/elephc</span>
+<span class="out">==&gt; Downloading v0.19.7 (arm64_sonoma)</span>
+<span class="out">==&gt; Pouring elephc--0.19.7.arm64_sonoma.bottle.tar.gz</span>
+<span class="ok-l">🍺  /opt/homebrew/Cellar/elephc/0.19.7 — 1,803 test, 0 failed</span>
+</pre>
+            </div>
+            <p class="gs__note mono">
+              Recommended. Includes prebuilt binary and shell completions.
+            </p>
+          </div>
+
+          <div class="gs__tabpanel" data-tab="gs-cargo">
+            <div class="code">
+              <div class="code__bar">
+                <span>from source · rust ≥ 1.76</span>
+                <button class="copy" data-copy={"cargo install --git https://github.com/illegalstudio/elephc"}>
+                  <span data-copy-label>copy</span>
+                </button>
+              </div>
+              <pre class="code__body"><span class="prompt">$</span> <span class="cmd">git clone https://github.com/illegalstudio/elephc.git</span>
+<span class="prompt">$</span> <span class="cmd">cd elephc</span>
+<span class="prompt">$</span> <span class="cmd">cargo build --release</span>
+<span class="out">    Compiling elephc v0.19.7 (…/elephc)</span>
+<span class="out">    Finished `release` profile [optimized] target(s)</span>
+<span class="prompt">$</span> <span class="cmd">./target/release/elephc --version</span>
+<span class="out">elephc 0.19.7 (optimizer: fold / prop / dce)</span>
+</pre>
+            </div>
+            <p class="gs__note mono">
+              The whole toolchain is Rust. 1,800+ tests, all green.
+            </p>
+          </div>
+
+          <div class="gs__tabpanel" data-tab="gs-dl">
+            <div class="code">
+              <div class="code__bar">
+                <span>release binary · darwin-arm64</span>
+                <button class="copy" data-copy={"curl -L https://github.com/illegalstudio/elephc/releases/latest/download/elephc-darwin-arm64.tar.gz | tar -xz -C /usr/local/bin"}>
+                  <span data-copy-label>copy</span>
+                </button>
+              </div>
+              <pre class="code__body"><span class="prompt">$</span> <span class="cmd">curl -L https://github.com/illegalstudio/elephc/ \</span>
+<span class="cmd">    releases/latest/download/elephc-darwin-arm64.tar.gz \</span>
+<span class="cmd">    | tar -xz -C /usr/local/bin</span>
+<span class="out">  elephc   11 MB</span>
+<span class="out">  LICENSE   1 KB</span>
+<span class="prompt">$</span> <span class="cmd">elephc --version</span>
+<span class="out">elephc 0.19.7</span>
+</pre>
+            </div>
+            <p class="gs__note mono">
+              Mirrors are published for each stable release on GitHub.
+            </p>
+          </div>
+
+        </div>
+
+        <div class="gs__requires">
+          <div class="gs__requires-h mono">requires</div>
+          <ul class="gs__requires-list">
+            <li><span class="mono">as</span> and <span class="mono">ld</span> from your host toolchain</li>
+            <li>macOS: Xcode CLT · Linux: <span class="mono">build-essential</span></li>
+            <li>Target triple auto-detected from host</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- FIRST COMPILE -->
+      <div class="gs__panel">
+        <div class="gs__label mono"><span class="mark-accent">②</span> compile &amp; run</div>
+
+        <div class="code gs__source">
+          <div class="code__bar">
+            <span>hello.php</span>
+            <span class="stage-badge">src</span>
+          </div>
+          <pre class="code__body"><span class="com">&lt;?php</span>
+
+<span class="kw">function</span> <span class="fn">main</span>()<span class="p">:</span> <span class="ty">int</span> <span class="p">{</span>
+    <span class="kw">echo</span> <span class="str">"Hello from elephc!\n"</span><span class="p">;</span>
+    <span class="kw">return</span> <span class="num">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre>
+        </div>
+
+        <div class="gs__arrow mono" aria-hidden="true">
+          ↓ <span>elephc hello.php</span> ↓
+        </div>
+
+        <div class="code gs__term">
+          <div class="code__bar">
+            <span>terminal</span>
+            <span class="stage-badge">out</span>
+          </div>
+          <pre class="code__body"><span class="prompt">$</span> <span class="cmd">elephc hello.php</span>
+<span class="out">  → hello  (arm64, 14,128 b, 42 ms)</span>
+
+<span class="prompt">$</span> <span class="cmd">./hello</span>
+<span class="ok-l">Hello from elephc!</span>
+
+<span class="prompt">$</span> <span class="cmd">file hello</span>
+<span class="out">hello: Mach-O 64-bit executable arm64</span>
+
+<span class="prompt">$</span> <span class="cmd">otool -L hello</span>
+<span class="out">  /usr/lib/libSystem.B.dylib</span>
+</pre>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .gs { position: relative; }
+  .gs__radio {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .gs__head { max-width: 780px; margin-bottom: 48px; }
+  .gs__title { margin-top: 22px; margin-bottom: 20px; max-width: 22ch; }
+
+  .gs__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+  @media (max-width: 980px) { .gs__grid { grid-template-columns: 1fr; gap: 48px; } }
+
+  .gs__panel {
+    display: grid;
+    gap: 18px;
+    align-content: start;
+  }
+  .gs__label {
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .gs__label .mark-accent { font-size: 14px; margin-right: 4px; }
+
+  /* tabs */
+  .gs__tabs {
+    display: inline-flex;
+    padding: 4px;
+    gap: 2px;
+    border: 1px solid var(--line-bright);
+    border-radius: var(--r-md);
+    background: var(--bg-elev);
+    width: max-content;
+  }
+  .gs__tab {
+    padding: 7px 14px;
+    border-radius: var(--r-sm);
+    font-size: 12.5px;
+    color: var(--fg-mute);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+    user-select: none;
+  }
+  .gs__tab:hover { color: var(--fg); }
+  .gs:has(#gs-brew:checked)  label[for="gs-brew"],
+  .gs:has(#gs-cargo:checked) label[for="gs-cargo"],
+  .gs:has(#gs-dl:checked)    label[for="gs-dl"] {
+    background: var(--accent-bg);
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px var(--accent-line);
+  }
+  .gs:has(#gs-brew:focus-visible)  label[for="gs-brew"],
+  .gs:has(#gs-cargo:focus-visible) label[for="gs-cargo"],
+  .gs:has(#gs-dl:focus-visible)    label[for="gs-dl"] {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .gs__tabpanels { position: relative; min-height: 220px; }
+  .gs__tabpanel { display: none; animation: gsfade 160ms ease both; }
+  .gs:has(#gs-brew:checked)  .gs__tabpanel[data-tab="gs-brew"],
+  .gs:has(#gs-cargo:checked) .gs__tabpanel[data-tab="gs-cargo"],
+  .gs:has(#gs-dl:checked)    .gs__tabpanel[data-tab="gs-dl"] { display: block; }
+  @keyframes gsfade { from { opacity: 0; } to { opacity: 1; } }
+
+  .gs__note { font-size: 11.5px; color: var(--fg-mute); margin-top: 10px; letter-spacing: 0.01em; }
+
+  .gs__requires {
+    margin-top: 8px;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--bg-soft);
+  }
+  .gs__requires-h {
+    font-size: 10.5px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .gs__requires-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .gs__requires-list li { font-size: 13px; color: var(--fg-dim); }
+  .gs__requires-list .mono { color: var(--fg); background: var(--bg-elev); padding: 1px 5px; border: 1px solid var(--line); border-radius: var(--r-sm); font-size: 11.5px; }
+
+  .gs__arrow {
+    text-align: center;
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.1em;
+  }
+  .gs__arrow span { margin: 0 12px; color: var(--accent); }
+  .gs__term { margin-top: 0; }
+</style>

@@ -1,0 +1,144 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="ft" aria-labelledby="ft-title">
+  <div class="container ft__inner">
+    <h2 id="ft-title" class="sr-only">Footer</h2>
+
+    <div class="ft__brand">
+      <a href="#" class="ft__wordmark">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M5 18V6h12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="square"/>
+          <path d="M5 12h9" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="square"/>
+          <path d="M5 18h12" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="square"/>
+          <circle cx="19" cy="6" r="1.7" fill="#e9a66a"/>
+        </svg>
+        <span>elephc</span>
+      </a>
+      <p class="ft__tagline">
+        A compiler for static PHP. <br />
+        Written in Rust. MIT licensed. <br class="ft__br-xs" />
+        Built in public.
+      </p>
+    </div>
+
+    <nav class="ft__col" aria-label="Project">
+      <div class="ft__heading mono">project</div>
+      <ul>
+        <li><a href="#pipeline">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#start">Install</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+      </ul>
+    </nav>
+
+    <nav class="ft__col" aria-label="Resources">
+      <div class="ft__heading mono">resources</div>
+      <ul>
+        <li><a href="https://github.com/illegalstudio/elephc" rel="noopener">GitHub <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/illegalstudio/elephc/tree/main/docs" rel="noopener">Language reference <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/illegalstudio/elephc/tree/main/examples" rel="noopener">Examples <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/illegalstudio/elephc/releases" rel="noopener">Releases <span aria-hidden="true">↗</span></a></li>
+      </ul>
+    </nav>
+
+    <nav class="ft__col" aria-label="Community">
+      <div class="ft__heading mono">community</div>
+      <ul>
+        <li><a href="https://github.com/illegalstudio/elephc/issues" rel="noopener">Issues <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/illegalstudio/elephc/discussions" rel="noopener">Discussions <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://github.com/illegalstudio/elephc/blob/main/CONTRIBUTING.md" rel="noopener">Contributing <span aria-hidden="true">↗</span></a></li>
+        <li><a href="https://illegal.studio" rel="noopener">Illegal Studio <span aria-hidden="true">↗</span></a></li>
+      </ul>
+    </nav>
+
+  </div>
+
+  <div class="ft__baseline">
+    <div class="container ft__baseline-inner">
+      <div class="ft__legal mono">
+        <span>elephc</span>
+        <span class="ft__sep">·</span>
+        <span>v0.19.7</span>
+        <span class="ft__sep">·</span>
+        <span>MIT License</span>
+        <span class="ft__sep">·</span>
+        <span>© {year}</span>
+      </div>
+      <div class="ft__by mono">
+        built by <a href="https://illegal.studio" rel="noopener">Illegal Studio</a> &amp; <a href="https://github.com/vincenzopetrucci" rel="noopener">Vincenzo Petrucci</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+
+  .ft { border-top: 1px solid var(--line-bright); padding-top: clamp(56px, 8vw, 96px); }
+
+  .ft__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: 48px;
+    padding-bottom: 64px;
+  }
+  @media (max-width: 880px) {
+    .ft__inner { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 520px) {
+    .ft__inner { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  .ft__brand { max-width: 44ch; }
+  .ft__wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.02em;
+  }
+  .ft__tagline {
+    margin-top: 14px;
+    color: var(--fg-dim);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .ft__heading {
+    font-size: 10.5px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .ft__col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .ft__col a {
+    color: var(--fg-dim);
+    font-size: 14px;
+    transition: color 120ms ease;
+  }
+  .ft__col a:hover { color: var(--fg); }
+
+  .ft__baseline { border-top: 1px solid var(--line); padding: 20px 0 28px; }
+  .ft__baseline-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .ft__legal { font-size: 11.5px; color: var(--fg-mute); letter-spacing: 0.03em; }
+  .ft__sep { margin: 0 6px; color: var(--fg-faint); }
+  .ft__by { font-size: 11.5px; color: var(--fg-mute); }
+  .ft__by a { color: var(--fg-dim); border-bottom: 1px solid var(--line-bright); padding-bottom: 1px; transition: color 120ms ease, border-color 120ms ease; }
+  .ft__by a:hover { color: var(--accent); border-color: var(--accent-line); }
+
+  @media (max-width: 420px) {
+    .ft__br-xs { display: none; }
+  }
+</style>

@@ -1,0 +1,85 @@
+---
+import "../styles/global.css";
+
+const { title = "elephc — PHP, compiled to native assembly.", description = "elephc is a from-scratch compiler that lowers a static subset of PHP directly to native assembly, assembles and links a standalone binary. No interpreter. No VM. No Zend Engine." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0c0b0a" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <slot />
+
+    <script is:inline>
+      // Tiny copy-button handler. Scans for [data-copy] buttons, copies the
+      // associated text and flips a data attribute for a short-lived style.
+      document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-copy]");
+        if (!btn) return;
+        const text = btn.getAttribute("data-copy");
+        if (!text) return;
+        const done = () => {
+          btn.setAttribute("data-copied", "1");
+          const label = btn.querySelector("[data-copy-label]");
+          const original = label ? label.textContent : null;
+          if (label) label.textContent = "copied";
+          setTimeout(() => {
+            btn.removeAttribute("data-copied");
+            if (label && original !== null) label.textContent = original;
+          }, 1600);
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(done).catch(() => {});
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand("copy"); done(); } catch (_) {}
+          document.body.removeChild(ta);
+        }
+      });
+    </script>
+
+    <style is:global>
+      .skip-link {
+        position: absolute;
+        top: -999px;
+        left: 0;
+        background: var(--accent);
+        color: #0c0b0a;
+        padding: 8px 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        z-index: 100;
+      }
+      .skip-link:focus { top: 8px; left: 8px; }
+    </style>
+  </body>
+</html>

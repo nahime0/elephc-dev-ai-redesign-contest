@@ -1,0 +1,444 @@
+---
+const stages = [
+  {
+    id: "s1",
+    num: "01",
+    key: "parse",
+    title: "Parse",
+    oneLiner: "source → AST",
+    desc: "The lexer scans the PHP source into tokens, then the parser folds them into a typed abstract syntax tree. Error recovery is bounded — you get a real line and column, not a stack trace.",
+    artifact: "AST",
+    emit: "--emit=ast",
+  },
+  {
+    id: "s2",
+    num: "02",
+    key: "tck",
+    title: "Type-check",
+    oneLiner: "AST → typed AST",
+    desc: "Every expression is resolved to one of elephc's ten concrete types before lowering. No implicit string-to-int, no duck-typed calls. If a value's type is ambiguous, compilation stops at this stage — never later.",
+    artifact: "Types",
+    emit: "--emit=types",
+  },
+  {
+    id: "s3",
+    num: "03",
+    key: "lower",
+    title: "Lower",
+    oneLiner: "typed AST → native asm",
+    desc: "The typed tree is lowered through a compact SSA-style IR, then instruction-selected directly for the target architecture. No C in the middle, no bytecode to interpret — just a register allocator and the backend for your triple.",
+    artifact: "IR",
+    emit: "--emit=ir",
+  },
+  {
+    id: "s4",
+    num: "04",
+    key: "asm",
+    title: "Assemble",
+    oneLiner: "asm → object file",
+    desc: "The native assembler for your host (as on macOS, gas on Linux) writes out a Mach-O or ELF relocatable object with a clean symbol table. elephc owns the call convention; you can inspect every symbol it emits.",
+    artifact: "Object",
+    emit: "--emit=obj",
+  },
+  {
+    id: "s5",
+    num: "05",
+    key: "link",
+    title: "Link",
+    oneLiner: "object → binary",
+    desc: "The system linker pulls in elephc's small included runtime — allocator, I/O shims, string helpers — and produces a position-independent executable. No dynamic PHP anywhere. Just a binary you can chmod +x and ship.",
+    artifact: "Binary",
+    emit: "(default)",
+  },
+];
+---
+
+<section class="pipe" id="pipeline" aria-labelledby="pipe-title">
+  <!-- Hidden radio inputs drive tab state with :has() — no JS required -->
+  {stages.map((s, i) => (
+    <input
+      type="radio"
+      name="pipe-stage"
+      id={s.id}
+      class="pipe__radio"
+      checked={i === 0}
+    />
+  ))}
+
+  <div class="container">
+    <header class="pipe__head">
+      <div class="eyebrow">
+        <span class="tag">02 / 07</span>
+        <span class="sep"></span>
+        <span>how it works</span>
+      </div>
+      <h2 id="pipe-title" class="h-section pipe__title">
+        Five stages.<br />
+        <span class="mark-accent">One straight line from .php to the metal.</span>
+      </h2>
+      <p class="lead pipe__lead">
+        Click through each stage to see what the compiler produces. Every artifact below is something
+        you can emit yourself with <code class="pipe__code">elephc --emit=…</code>.
+      </p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="pipe__tabs" role="radiogroup" aria-label="Compilation stages">
+      {stages.map((s, i) => (
+        <>
+          <label for={s.id} class={`pipe__tab pipe__tab--${s.key}`}>
+            <span class="pipe__tab-num mono">{s.num}</span>
+            <span class="pipe__tab-title">{s.title}</span>
+            <span class="pipe__tab-one mono">{s.oneLiner}</span>
+          </label>
+          {i < stages.length - 1 && (
+            <span class="pipe__arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 12"><path d="M0 6h22M18 2l4 4-4 4" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="square"/></svg>
+            </span>
+          )}
+        </>
+      ))}
+    </div>
+
+    <!-- Panels -->
+    <div class="pipe__panels">
+
+      <article class="pipe__panel" data-stage="s1">
+        <div class="pipe__left">
+          <div class="pipe__kicker mono">Stage 01 · Parse</div>
+          <h3 class="h-sub pipe__h">From source text to a typed AST.</h3>
+          <p class="body">{stages[0].desc}</p>
+          <div class="pipe__emit"><span>emit</span><code>elephc hello.php --emit=ast</code></div>
+        </div>
+        <div class="pipe__right">
+          <div class="code">
+            <div class="code__bar"><span>AST · hello.php</span><span class="stage-badge">stage 01</span></div>
+            <pre class="code__body"><span class="mut">FunctionDecl</span> <span class="fn">fib</span>
+<span class="mut">├─ </span><span class="kw">Param</span>  <span class="var">$n</span><span class="p">:</span> <span class="ty">int</span>
+<span class="mut">├─ </span><span class="kw">Return</span> <span class="p">:</span> <span class="ty">int</span>
+<span class="mut">└─ </span><span class="kw">Block</span>
+<span class="mut">   ├─ </span><span class="kw">IfStmt</span>
+<span class="mut">   │  ├─ </span><span class="kw">BinaryOp</span> <span class="op">&lt;</span>
+<span class="mut">   │  │  ├─ </span><span class="var">$n</span>
+<span class="mut">   │  │  └─ </span><span class="num">2</span>
+<span class="mut">   │  └─ </span><span class="kw">Return</span> <span class="var">$n</span>
+<span class="mut">   └─ </span><span class="kw">Return</span>
+<span class="mut">      └─ </span><span class="kw">BinaryOp</span> <span class="op">+</span>
+<span class="mut">         ├─ </span><span class="kw">Call</span> <span class="fn">fib</span><span class="p">(</span><span class="var">$n</span> <span class="op">-</span> <span class="num">1</span><span class="p">)</span>
+<span class="mut">         └─ </span><span class="kw">Call</span> <span class="fn">fib</span><span class="p">(</span><span class="var">$n</span> <span class="op">-</span> <span class="num">2</span><span class="p">)</span>
+</pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="pipe__panel" data-stage="s2">
+        <div class="pipe__left">
+          <div class="pipe__kicker mono">Stage 02 · Type-check</div>
+          <h3 class="h-sub pipe__h">If it's ambiguous, it fails here — not at runtime.</h3>
+          <p class="body">{stages[1].desc}</p>
+          <div class="pipe__emit"><span>emit</span><code>elephc hello.php --emit=types</code></div>
+        </div>
+        <div class="pipe__right">
+          <div class="code">
+            <div class="code__bar"><span>Type table · fib</span><span class="stage-badge">stage 02</span></div>
+            <pre class="code__body"><span class="ok-l">✓</span> <span class="fn">fib</span><span class="p">(</span><span class="ty">int</span><span class="p">)</span> <span class="op">-&gt;</span> <span class="ty">int</span>
+<span class="ok-l">✓</span> <span class="var">$n</span>                   <span class="mut">:</span> <span class="ty">int</span>        <span class="com"># param</span>
+<span class="ok-l">✓</span> <span class="num">2</span>                    <span class="mut">:</span> <span class="ty">int</span>        <span class="com"># literal</span>
+<span class="ok-l">✓</span> <span class="var">$n</span> <span class="op">&lt;</span> <span class="num">2</span>               <span class="mut">:</span> <span class="ty">bool</span>       <span class="com"># lt(int,int)</span>
+<span class="ok-l">✓</span> <span class="var">$n</span> <span class="op">-</span> <span class="num">1</span>               <span class="mut">:</span> <span class="ty">int</span>        <span class="com"># sub(int,int)</span>
+<span class="ok-l">✓</span> <span class="fn">fib</span><span class="p">(</span><span class="var">$n</span><span class="op">-</span><span class="num">1</span><span class="p">)</span>            <span class="mut">:</span> <span class="ty">int</span>        <span class="com"># resolved</span>
+<span class="ok-l">✓</span> <span class="fn">fib</span><span class="p">(</span><span class="var">$n</span><span class="op">-</span><span class="num">1</span><span class="p">)</span> <span class="op">+</span> <span class="fn">fib</span><span class="p">(</span><span class="var">$n</span><span class="op">-</span><span class="num">2</span><span class="p">)</span>  <span class="mut">:</span> <span class="ty">int</span>
+
+<span class="mut">————————————————————————————————</span>
+<span class="mut">implicit coercions</span>   0
+<span class="mut">unresolved idents</span>    0
+<span class="mut">dynamic dispatch</span>     forbidden
+</pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="pipe__panel" data-stage="s3">
+        <div class="pipe__left">
+          <div class="pipe__kicker mono">Stage 03 · Lower</div>
+          <h3 class="h-sub pipe__h">SSA IR, then direct instruction selection.</h3>
+          <p class="body">{stages[2].desc}</p>
+          <div class="pipe__emit"><span>emit</span><code>elephc hello.php --emit=ir</code></div>
+        </div>
+        <div class="pipe__right">
+          <div class="code">
+            <div class="code__bar"><span>IR · fib</span><span class="stage-badge">stage 03</span></div>
+            <pre class="code__body"><span class="fn">%fib</span><span class="p">(</span><span class="var">n</span><span class="p">:</span> <span class="ty">i32</span><span class="p">)</span> <span class="op">-&gt;</span> <span class="ty">i32</span> <span class="p">{</span>
+<span class="dir">bb0:</span>
+  <span class="reg">%t0</span> <span class="op">=</span> cmp.lt <span class="var">n</span><span class="p">,</span> <span class="num">2</span>
+  cbr <span class="reg">%t0</span><span class="p">,</span> <span class="dir">bb_base</span><span class="p">,</span> <span class="dir">bb_rec</span>
+<span class="dir">bb_rec:</span>
+  <span class="reg">%t1</span> <span class="op">=</span> sub <span class="var">n</span><span class="p">,</span> <span class="num">1</span>
+  <span class="reg">%a</span>  <span class="op">=</span> call <span class="fn">%fib</span><span class="p">(</span><span class="reg">%t1</span><span class="p">)</span>
+  <span class="reg">%t2</span> <span class="op">=</span> sub <span class="var">n</span><span class="p">,</span> <span class="num">2</span>
+  <span class="reg">%b</span>  <span class="op">=</span> call <span class="fn">%fib</span><span class="p">(</span><span class="reg">%t2</span><span class="p">)</span>
+  <span class="reg">%r</span>  <span class="op">=</span> add <span class="reg">%a</span><span class="p">,</span> <span class="reg">%b</span>
+  ret <span class="reg">%r</span>
+<span class="dir">bb_base:</span>
+  ret <span class="var">n</span>
+<span class="p">}</span>
+
+<span class="com"># optimizer pass · v0.19.7</span>
+<span class="com">#   folding           ✓</span>
+<span class="com">#   prop              ✓</span>
+<span class="com">#   dead-code elim    ✓</span>
+</pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="pipe__panel" data-stage="s4">
+        <div class="pipe__left">
+          <div class="pipe__kicker mono">Stage 04 · Assemble</div>
+          <h3 class="h-sub pipe__h">Clean object files, in the format your OS expects.</h3>
+          <p class="body">{stages[3].desc}</p>
+          <div class="pipe__emit"><span>emit</span><code>elephc hello.php --emit=obj</code></div>
+        </div>
+        <div class="pipe__right">
+          <div class="code">
+            <div class="code__bar"><span>hello.o · Mach-O · arm64</span><span class="stage-badge">stage 04</span></div>
+            <pre class="code__body"><span class="mut">SYMBOLS</span>
+  <span class="kw">T</span>  <span class="fn">_fib</span>              <span class="num">0x00000000</span>   <span class="mut">24 b</span>
+  <span class="kw">T</span>  <span class="fn">_main</span>             <span class="num">0x00000018</span>   <span class="mut">48 b</span>
+  <span class="kw">U</span>  <span class="fn">_printf</span>
+
+<span class="mut">RELOCATIONS</span>
+  R_AARCH64_CALL26    <span class="fn">_fib</span>     <span class="mut">@ _main+0x10</span>
+  R_AARCH64_CALL26    <span class="fn">_fib</span>     <span class="mut">@ _fib +0x1c</span>
+  R_AARCH64_CALL26    <span class="fn">_printf</span>  <span class="mut">@ _main+0x2c</span>
+  R_AARCH64_ADR_GOT   <span class="fn">_fmt</span>     <span class="mut">@ _main+0x20</span>
+
+<span class="mut">SECTIONS</span>
+  __text      <span class="num">128</span>  <span class="mut">b</span>
+  __cstring     <span class="num">4</span>  <span class="mut">b</span>
+  __got        <span class="num">16</span>  <span class="mut">b</span>
+</pre>
+          </div>
+        </div>
+      </article>
+
+      <article class="pipe__panel" data-stage="s5">
+        <div class="pipe__left">
+          <div class="pipe__kicker mono">Stage 05 · Link</div>
+          <h3 class="h-sub pipe__h">A small runtime, a static binary, and you.</h3>
+          <p class="body">{stages[4].desc}</p>
+          <div class="pipe__emit"><span>emit</span><code>elephc hello.php -o hello</code></div>
+        </div>
+        <div class="pipe__right">
+          <div class="code">
+            <div class="code__bar"><span>hello · Mach-O executable · arm64</span><span class="stage-badge">stage 05</span></div>
+            <pre class="code__body"><span class="mut">HEADER</span>
+  magic     <span class="num">0xfeedfacf</span>
+  cputype   CPU_TYPE_ARM64
+  filetype  MH_EXECUTE
+  flags     MH_NOUNDEFS <span class="op">|</span> MH_PIE
+
+<span class="mut">LOAD COMMANDS</span>
+  LC_SEGMENT_64   __PAGEZERO    <span class="num">4 GB</span>
+  LC_SEGMENT_64   __TEXT        <span class="num">4 KB</span>
+  LC_SEGMENT_64   __LINKEDIT    <span class="num">2 KB</span>
+  LC_MAIN         entry         <span class="num">0x100003f70</span>
+  LC_LOAD_DYLIB   /usr/lib/libSystem.B.dylib
+
+<span class="prompt">$</span> <span class="cmd">file hello</span>
+<span class="out">hello: Mach-O 64-bit executable arm64</span>
+
+<span class="prompt">$</span> <span class="cmd">./hello</span>
+<span class="ok-l">832040</span>
+</pre>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .pipe { position: relative; }
+
+  /* Visually hide radios but keep them in the tab order so keyboard users
+     get native radio-group arrow-key navigation. Selection drives :has() below. */
+  .pipe__radio {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .pipe__head { max-width: 780px; margin-bottom: 48px; }
+  .pipe__title { margin-top: 22px; margin-bottom: 22px; max-width: 24ch; }
+  .pipe__lead code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--fg);
+    padding: 2px 6px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+  }
+
+  /* --- tabs strip --- */
+  .pipe__tabs {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 0;
+    border: 1px solid var(--line-bright);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+    padding: 6px;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 900px) {
+    .pipe__tabs {
+      grid-template-columns: 1fr;
+      padding: 4px;
+    }
+    .pipe__arrow { display: none !important; }
+  }
+
+  .pipe__tab {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    grid-template-areas:
+      "num title"
+      "num one";
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 12px 14px;
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+    user-select: none;
+  }
+  @media (max-width: 900px) { .pipe__tab { grid-column: 1 / -1; } }
+
+  .pipe__tab:hover { background: var(--bg-elev-2); }
+
+  .pipe__tab-num {
+    grid-area: num;
+    align-self: center;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--fg-faint);
+    letter-spacing: -0.02em;
+    min-width: 24px;
+  }
+  .pipe__tab-title {
+    grid-area: title;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--fg-dim);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .pipe__tab-one {
+    grid-area: one;
+    font-size: 11px;
+    color: var(--fg-mute);
+    letter-spacing: 0.02em;
+  }
+
+  .pipe__arrow {
+    grid-column: span 1;
+    align-self: center;
+    justify-self: center;
+    color: var(--fg-faint);
+  }
+  .pipe__arrow svg { width: 22px; height: 10px; display: block; }
+
+  /* --- active tab styling — via :has() --- */
+  .pipe:has(#s1:checked) label[for="s1"],
+  .pipe:has(#s2:checked) label[for="s2"],
+  .pipe:has(#s3:checked) label[for="s3"],
+  .pipe:has(#s4:checked) label[for="s4"],
+  .pipe:has(#s5:checked) label[for="s5"] {
+    background: var(--accent-bg);
+    box-shadow: inset 0 0 0 1px var(--accent-line);
+  }
+  .pipe:has(#s1:checked) label[for="s1"] .pipe__tab-num,
+  .pipe:has(#s2:checked) label[for="s2"] .pipe__tab-num,
+  .pipe:has(#s3:checked) label[for="s3"] .pipe__tab-num,
+  .pipe:has(#s4:checked) label[for="s4"] .pipe__tab-num,
+  .pipe:has(#s5:checked) label[for="s5"] .pipe__tab-num { color: var(--accent); }
+  .pipe:has(#s1:checked) label[for="s1"] .pipe__tab-title,
+  .pipe:has(#s2:checked) label[for="s2"] .pipe__tab-title,
+  .pipe:has(#s3:checked) label[for="s3"] .pipe__tab-title,
+  .pipe:has(#s4:checked) label[for="s4"] .pipe__tab-title,
+  .pipe:has(#s5:checked) label[for="s5"] .pipe__tab-title { color: var(--fg); }
+
+  /* Show focus ring on the associated label when its radio has keyboard focus. */
+  .pipe:has(#s1:focus-visible) label[for="s1"],
+  .pipe:has(#s2:focus-visible) label[for="s2"],
+  .pipe:has(#s3:focus-visible) label[for="s3"],
+  .pipe:has(#s4:focus-visible) label[for="s4"],
+  .pipe:has(#s5:focus-visible) label[for="s5"] {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* --- panels --- */
+  .pipe__panels { position: relative; min-height: 420px; }
+  .pipe__panel {
+    display: none;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 6fr);
+    gap: 48px;
+    animation: fadein 220ms ease both;
+  }
+  @media (max-width: 900px) {
+    .pipe__panel { grid-template-columns: 1fr; gap: 28px; }
+  }
+
+  .pipe:has(#s1:checked) .pipe__panel[data-stage="s1"],
+  .pipe:has(#s2:checked) .pipe__panel[data-stage="s2"],
+  .pipe:has(#s3:checked) .pipe__panel[data-stage="s3"],
+  .pipe:has(#s4:checked) .pipe__panel[data-stage="s4"],
+  .pipe:has(#s5:checked) .pipe__panel[data-stage="s5"] {
+    display: grid;
+  }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .pipe__left { align-self: start; padding-top: 8px; }
+  .pipe__kicker {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 14px;
+  }
+  .pipe__h { margin-bottom: 18px; max-width: 22ch; }
+  .pipe__emit {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 24px;
+    padding: 8px 10px 8px 12px;
+    border: 1px dashed var(--line-bright);
+    border-radius: var(--r-md);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .pipe__emit > span {
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10.5px;
+  }
+  .pipe__emit code { color: var(--accent); }
+</style>

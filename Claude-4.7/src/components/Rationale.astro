@@ -1,0 +1,165 @@
+---
+---
+
+<section class="rat" aria-labelledby="rat-title">
+  <div class="container rat__inner">
+    <div class="rat__head">
+      <div class="eyebrow">
+        <span class="tag">03 / 07</span>
+        <span class="sep"></span>
+        <span>why compile PHP at all</span>
+      </div>
+      <h2 id="rat-title" class="h-section rat__title">
+        The interesting half of PHP<br />
+        <span class="mark-dim">is the half you can actually reason about.</span>
+      </h2>
+    </div>
+
+    <div class="rat__cols">
+      <div class="rat__prose">
+        <p>
+          Most discussion of "fast PHP" lands on JIT, opcache, or FFI. Those are
+          worthwhile, but they all accept the same premise: your program is still a
+          PHP program at runtime, running inside a very clever interpreter.
+        </p>
+        <p>
+          elephc takes the other position. A large, boring, valuable subset of modern
+          PHP — typed parameters, typed returns, classes, enums, exceptions — is already
+          the same shape as Rust, C#, or Swift. It is statically analysable, ahead-of-time
+          compilable, and doesn't need a VM to run. It only runs inside one because,
+          historically, nobody wrote the compiler.
+        </p>
+      </div>
+
+      <aside class="rat__quote" aria-label="Thesis">
+        <div class="rat__quote-mark mono" aria-hidden="true">{`{ }`}</div>
+        <blockquote>
+          <p>
+            Keep your framework on PHP.<br />
+            Isolate the static, performance-sensitive paths.<br />
+            Compile those into standalone binaries,<br />
+            and drop them in.
+          </p>
+        </blockquote>
+        <footer class="rat__cite mono">elephc — the whole pitch, in four lines.</footer>
+      </aside>
+    </div>
+
+    <div class="rat__principles">
+      <div class="rat__p">
+        <div class="rat__p-num mono">i</div>
+        <h3 class="rat__p-h">A honest line between static and dynamic.</h3>
+        <p>elephc refuses to guess. If a call target, type, or dispatch can't be resolved at compile time, the compiler says so — it doesn't insert a fallback that will bite you at 3 a.m.</p>
+      </div>
+      <div class="rat__p">
+        <div class="rat__p-num mono">ii</div>
+        <h3 class="rat__p-h">A single artefact, with predictable cost.</h3>
+        <p>One executable. No dynamic loader chasing .so files. No warm-up period. Startup is measured in single-digit milliseconds, not seconds, because there is nothing to warm.</p>
+      </div>
+      <div class="rat__p">
+        <div class="rat__p-num mono">iii</div>
+        <h3 class="rat__p-h">A compiler you could read in an afternoon.</h3>
+        <p>~45k lines of Rust, with 1,800+ tests and no external runtime. The pipeline is short enough that a motivated engineer can trace a single function from .php to its generated .text bytes in one sitting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rat__head { max-width: 780px; margin-bottom: 56px; }
+  .rat__title { margin-top: 22px; }
+  .rat__title .mark-dim { color: var(--fg-mute); }
+
+  .rat__cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 64px;
+    margin-bottom: 80px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .rat__cols { grid-template-columns: 1fr; gap: 40px; } }
+
+  .rat__prose p {
+    color: var(--fg-dim);
+    font-size: 16.5px;
+    line-height: 1.7;
+    margin-bottom: 20px;
+    max-width: 56ch;
+  }
+  .rat__prose p:first-child::first-letter {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 3em;
+    float: left;
+    line-height: 0.9;
+    margin: 6px 10px 0 0;
+    color: var(--accent);
+  }
+
+  .rat__quote {
+    position: relative;
+    padding: 36px 32px 28px;
+    border: 1px solid var(--line-bright);
+    border-radius: var(--r-lg);
+    background: var(--bg-elev);
+  }
+  .rat__quote-mark {
+    position: absolute;
+    top: 18px; right: 22px;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    opacity: 0.6;
+  }
+  .rat__quote blockquote {
+    margin: 0 0 22px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: clamp(18px, 2vw, 22px);
+    line-height: 1.45;
+    letter-spacing: -0.015em;
+    color: var(--fg);
+  }
+  .rat__cite { font-size: 11px; color: var(--fg-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .rat__principles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  @media (max-width: 900px) { .rat__principles { grid-template-columns: 1fr; } }
+
+  .rat__p {
+    padding: 28px 28px 28px 28px;
+    border-right: 1px solid var(--line);
+  }
+  .rat__p:last-child { border-right: 0; }
+  @media (max-width: 900px) {
+    .rat__p { border-right: 0; border-bottom: 1px solid var(--line); padding: 24px 0; }
+    .rat__p:last-child { border-bottom: 0; }
+  }
+
+  .rat__p-num {
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .rat__p-h {
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--fg);
+    letter-spacing: -0.012em;
+    margin-bottom: 10px;
+    line-height: 1.35;
+  }
+  .rat__p p {
+    font-size: 14px;
+    color: var(--fg-dim);
+    line-height: 1.6;
+  }
+</style>

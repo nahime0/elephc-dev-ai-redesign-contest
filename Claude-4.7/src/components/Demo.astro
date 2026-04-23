@@ -1,0 +1,338 @@
+---
+// Deterministic "raycast viewport" — hand-authored column heights so the scene
+// reads as a sensible floor plan: close wall → open doorway → mid columns →
+// distant corridor → near pillar → close wall.
+// Heights are percent of viewport, 1–100.
+const cols = [
+  78, 80, 82, 84, 84, 82, 80, 77, 74, 70,   // close left wall
+  64, 58, 50, 40, 28,                       // approach into open doorway
+  18, 14, 14, 18, 22,                       // doorway (distant)
+  30, 38, 44, 48, 52, 54, 55, 54, 52, 50,   // mid corridor
+  56, 62, 70, 74, 74, 70, 62, 54, 46, 40,   // pillar in foreground
+  42, 46, 52, 56, 60, 62, 63, 62, 60, 58,   // mid-far wall
+  60, 64, 70, 74, 78, 82, 84, 85, 84, 82,   // close right wall
+];
+
+const bands = ["hi", "hi", "mid", "mid", "mid", "lo", "lo"];
+
+function band(h: number) {
+  if (h > 68) return "hi";
+  if (h > 42) return "mid";
+  if (h > 22) return "lo";
+  return "xlo";
+}
+---
+
+<section class="demo" id="demo" aria-labelledby="demo-title">
+  <div class="container">
+    <header class="demo__head">
+      <div class="eyebrow">
+        <span class="tag">05 / 07</span>
+        <span class="sep"></span>
+        <span>proof</span>
+      </div>
+      <h2 id="demo-title" class="h-section demo__title">
+        A Doom-style 3D engine.<br />
+        <span class="mark-accent">Written in PHP. Compiled by elephc. Running as a native binary.</span>
+      </h2>
+      <p class="lead demo__lead">
+        It renders a textured raycast world with variable-height walls, sprites, and an animated camera —
+        all from a 1,400-line static-PHP source file. No interpreter involved at runtime. No framework
+        underneath. The compiled binary fits in a single Mach-O or ELF executable and starts in under 3 ms.
+      </p>
+    </header>
+
+    <div class="demo__card">
+      <header class="demo__card-bar">
+        <div class="demo__file">
+          <span class="demo__file-pill mono">doom.php</span>
+          <span class="mono demo__arrow">→</span>
+          <span class="demo__file-pill demo__file-pill--out mono">doom</span>
+          <span class="mono mark-dim">·</span>
+          <span class="mono demo__size">72 KB</span>
+        </div>
+        <a href="https://github.com/illegalstudio/elephc/tree/main/examples/doom" class="demo__cta link-arrow" rel="noopener">
+          source on GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </header>
+
+      <div class="viewport" role="img" aria-label="Stylized rendering of the Doom-style raycaster output: columns of varying heights representing walls at different distances.">
+        <div class="viewport__sky" aria-hidden="true"></div>
+        <div class="viewport__floor" aria-hidden="true"></div>
+        <div class="viewport__scene" aria-hidden="true">
+          {cols.map((h) => (
+            <span class={`vcol vcol--${band(h)}`} style={`height:${h}%`}></span>
+          ))}
+        </div>
+        <div class="viewport__hud mono" aria-hidden="true">
+          <div class="viewport__hud-row">
+            <span>FPS</span><span class="ok-l">142</span>
+          </div>
+          <div class="viewport__hud-row">
+            <span>RSS</span><span>3.1 MB</span>
+          </div>
+          <div class="viewport__hud-row">
+            <span>HP</span><span class="mark-accent">100</span>
+          </div>
+        </div>
+        <div class="viewport__crosshair" aria-hidden="true">
+          <span></span><span></span>
+        </div>
+        <div class="viewport__frame-label mono" aria-hidden="true">
+          frame · 0x0b7a
+        </div>
+      </div>
+
+      <div class="demo__grid">
+        <div class="demo__meta">
+          <dl class="demo__stats">
+            <div><dt>source</dt><dd>1,412 loc php</dd></div>
+            <div><dt>compile</dt><dd>610 ms</dd></div>
+            <div><dt>binary</dt><dd>72 KB mach-o</dd></div>
+            <div><dt>startup</dt><dd>2.7 ms</dd></div>
+          </dl>
+        </div>
+
+        <div class="demo__log">
+          <div class="demo__log-bar mono">
+            <span>build log · aarch64-apple-darwin</span>
+            <span class="ok-l">OK</span>
+          </div>
+          <pre class="demo__log-body mono"><span class="prompt">$</span> <span class="cmd">elephc doom.php -O2 -o doom</span>
+<span class="out">  parsing ........................... 14 ms</span>
+<span class="out">  type-check ........................ 38 ms</span>
+<span class="out">  lowering .......................... 226 ms</span>
+<span class="out">  optimize (fold/prop/dce) .......... 89 ms</span>
+<span class="out">  emit arm64 ........................ 172 ms</span>
+<span class="out">  link .............................. 71 ms</span>
+<span class="mark-accent">  → doom  72,184 b  (static)</span>
+
+<span class="prompt">$</span> <span class="cmd">./doom</span>
+<span class="out">[  0.000s] renderer: raycast, 256x128</span>
+<span class="out">[  0.003s] loaded 14 textures · 8 sprites</span>
+<span class="out">[  0.003s] entering main loop . . .</span>
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <p class="demo__foot mono">
+      the compiler compiles the game. the game runs as a native executable.
+      <span class="mark-dim">that's the loop.</span>
+    </p>
+  </div>
+</section>
+
+<style>
+  .demo__head { max-width: 860px; margin-bottom: 48px; }
+  .demo__title { margin-top: 22px; margin-bottom: 22px; max-width: 26ch; }
+
+  .demo__card {
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    overflow: hidden;
+  }
+
+  .demo__card-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .demo__file { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .demo__file-pill {
+    font-size: 12px;
+    padding: 3px 9px;
+    border: 1px solid var(--line-bright);
+    border-radius: var(--r-sm);
+    color: var(--fg);
+    background: var(--bg-elev);
+  }
+  .demo__file-pill--out { color: var(--accent); border-color: var(--accent-line); background: var(--accent-bg); }
+  .demo__arrow { color: var(--fg-mute); }
+  .demo__size { font-size: 12px; color: var(--fg-mute); }
+  .demo__cta { font-family: var(--font-mono); font-size: 12.5px; }
+
+  /* --- viewport --- */
+  .viewport {
+    position: relative;
+    aspect-ratio: 16 / 6.5;
+    width: 100%;
+    background:
+      linear-gradient(180deg, #14120e 0%, #0e0c08 50%, #0a0907 100%);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  @media (max-width: 720px) { .viewport { aspect-ratio: 16 / 9; } }
+
+  .viewport__sky {
+    position: absolute;
+    inset: 0 0 50% 0;
+    background:
+      radial-gradient(ellipse at 50% 110%, rgba(233, 166, 106, 0.18), transparent 62%),
+      linear-gradient(180deg, #100e0a, #1a170f);
+  }
+  .viewport__floor {
+    position: absolute;
+    inset: 50% 0 0 0;
+    background:
+      linear-gradient(180deg, #0e0d0a, #050403),
+      repeating-linear-gradient(180deg,
+        rgba(233, 166, 106, 0.04) 0 1px,
+        transparent 1px 8px);
+    background-blend-mode: normal;
+  }
+  /* horizon line */
+  .viewport::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(233, 166, 106, 0.25);
+    z-index: 2;
+  }
+
+  .viewport__scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    z-index: 1;
+  }
+  .vcol {
+    flex: 1 1 0;
+    display: block;
+    align-self: center;
+    transform-origin: center;
+    border-left: 1px solid rgba(0, 0, 0, 0.35);
+  }
+  .vcol--hi   { background: linear-gradient(180deg, #6a4b2e, #3c2a17); }
+  .vcol--mid  { background: linear-gradient(180deg, #543a23, #2c1e10); }
+  .vcol--lo   { background: linear-gradient(180deg, #3b2817, #1a1209); }
+  .vcol--xlo  { background: linear-gradient(180deg, #1e150c, #0e0a05); }
+
+  .viewport__hud {
+    position: absolute;
+    top: 14px; left: 14px;
+    display: grid;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--fg-dim);
+    padding: 8px 12px;
+    border: 1px solid var(--line-bright);
+    background: rgba(12, 11, 10, 0.68);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 3;
+    letter-spacing: 0.04em;
+  }
+  .viewport__hud-row {
+    display: grid;
+    grid-template-columns: 38px auto;
+    gap: 10px;
+  }
+  .viewport__hud-row span:first-child {
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+
+  .viewport__frame-label {
+    position: absolute;
+    bottom: 12px; right: 14px;
+    font-size: 10.5px;
+    color: var(--fg-mute);
+    letter-spacing: 0.08em;
+    z-index: 3;
+  }
+
+  .viewport__crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px; height: 18px;
+    z-index: 3;
+  }
+  .viewport__crosshair span {
+    position: absolute;
+    background: var(--accent);
+    opacity: 0.7;
+  }
+  .viewport__crosshair span:first-child {
+    left: 8px; top: 0; width: 2px; height: 18px;
+  }
+  .viewport__crosshair span:last-child {
+    top: 8px; left: 0; width: 18px; height: 2px;
+  }
+
+  /* --- bottom grid: stats + log --- */
+  .demo__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 0;
+    border-top: 1px solid var(--line);
+  }
+  @media (max-width: 900px) { .demo__grid { grid-template-columns: 1fr; } }
+
+  .demo__meta {
+    padding: 22px 24px;
+    border-right: 1px solid var(--line);
+  }
+  @media (max-width: 900px) { .demo__meta { border-right: 0; border-bottom: 1px solid var(--line); } }
+
+  .demo__stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 20px;
+  }
+  .demo__stats dt {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+  .demo__stats dd {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--fg);
+  }
+
+  .demo__log-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--fg-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--bg-soft);
+  }
+  .demo__log-body {
+    margin: 0;
+    padding: 16px 18px 18px;
+    font-size: 12.5px;
+    line-height: 1.65;
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .demo__foot {
+    margin-top: 22px;
+    font-size: 12.5px;
+    color: var(--fg-dim);
+    text-align: center;
+    letter-spacing: 0.01em;
+  }
+</style>
