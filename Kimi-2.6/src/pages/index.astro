@@ -1,17 +1,830 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import Terminal from '../components/Terminal.astro';
+import PipelineStage from '../components/PipelineStage.astro';
 
+const pipelineStages = [
+  {
+    number: '01',
+    icon: 'Aa',
+    title: 'Lexer',
+    description: 'Character-by-character scanning of PHP source into keywords, operators, literals, and identifiers.',
+    detail: 'Produces a stream of typed tokens with line:column positions for precise error reporting.',
+    color: '#c9a96e'
+  },
+  {
+    number: '02',
+    icon: '{}',
+    title: 'Parser',
+    description: 'Pratt parser with binding powers builds a structured tree of expressions and statements.',
+    detail: 'Handles operator precedence, associativity, and produces an untyped AST ready for analysis.',
+    color: '#6ab0c4'
+  },
+  {
+    number: '03',
+    icon: '>>',
+    title: 'Resolver',
+    description: 'Processes include, require, include_once, and require_once — merging multiple files into one AST.',
+    detail: 'Resolves file paths and inlines dependencies so the compiler sees a single coherent program.',
+    color: '#a88ec4'
+  },
+  {
+    number: '04',
+    icon: 'T:',
+    title: 'Type Checker',
+    description: 'Infers and validates types for every variable and expression. Catches errors before assembly is emitted.',
+    detail: 'Static type system with 10 user-facing types. Type errors reported at compile time with line:col precision.',
+    color: '#7eb89a'
+  },
+  {
+    number: '05',
+    icon: 'opt',
+    title: 'Optimizer',
+    description: 'Constant folding, constant propagation, control-flow pruning and normalization, and dead-code elimination.',
+    detail: 'Conservative by design — rewrites only happen when the shape is statically provable. CFG-lite reachability analysis.',
+    color: '#c9a96e'
+  },
+  {
+    number: '06',
+    icon: 'asm',
+    title: 'Codegen',
+    description: 'Every AST node is translated to annotated assembly for the selected target.',
+    detail: 'macOS ARM64, Linux ARM64, or Linux x86_64. Each line is commented explaining what and why.',
+    color: '#6ab0c4'
+  },
+  {
+    number: '07',
+    icon: 'ld',
+    title: 'Link',
+    description: 'The host assembles to object code, then links into a standalone executable with runtime routines included.',
+    detail: 'Mach-O on macOS, ELF on Linux. Zero external runtime dependencies.',
+    color: '#a88ec4'
+  }
+];
+
+const types = [
+  { name: 'int', example: '42, -7, PHP_INT_MAX' },
+  { name: 'float', example: '3.14, .5, 1e-5, INF' },
+  { name: 'string', example: '"hello\\n", \'raw\'' },
+  { name: 'bool', example: 'true, false' },
+  { name: 'null', example: 'null' },
+  { name: 'array', example: '[1,2], ["k"=>"v"]' },
+  { name: 'callable', example: 'function($x){}, fn($x)=>$x' },
+  { name: 'object', example: 'new Point(3, 4)' },
+  { name: 'pointer', example: 'ptr($x), ptr_null()' },
+  { name: 'mixed', example: 'mixed $x = 42' },
+  { name: 'enum', example: 'enum Color: int { case Red = 1; }' },
+  { name: 'union', example: 'int|string $x = 42' },
+  { name: 'nullable', example: '?int $x = null' },
+  { name: 'buffer', example: 'buffer<int> $xs = buffer_new<int>(256)' },
+  { name: 'packed', example: 'packed class Vec2 { float $x; float $y; }' }
+];
+
+const constructs = [
+  'Echo / Print', 'Variables & assignment', 'Arithmetic: + - * / % **',
+  'Comparison: == != < > === !== <=>', 'Logical: && || !', 'Bitwise: & | ^ ~ << >>',
+  'Null coalescing: ??', 'String concatenation (.)', 'Assignment ops: += -= *= /= .= %=',
+  'Pre/post increment/decrement', 'if / else / elseif', 'switch / match',
+  'for / foreach / while / do-while', 'break / continue / return',
+  'Named functions', 'Arrow functions', 'Closures & captures', 'Variadic & spread',
+  'Default & named arguments', 'Generators', 'Classes & objects',
+  'Constructors & methods', 'Traits & inheritance', 'Interfaces & abstract classes',
+  'Static methods & properties', 'Visibility modifiers', 'Magic methods',
+  'Copy-on-write semantics', 'Exceptions: try/catch/finally/throw',
+  'include / require / once', 'Constants', 'Namespaces', 'Enums',
+  'Pointers & ptr_cast<T>', 'FFI', 'Type aliases', 'Generics (buffer<T>)',
+  'Packed classes', 'ifdef'
+];
+
+const roadmap = [
+  { version: '0.1.0', label: 'Basic CLI compiler', status: 'done' },
+  { version: '0.5.0', label: 'I/O and file system', status: 'done' },
+  { version: '0.9.0', label: 'Memory management, free-list allocator', status: 'done' },
+  { version: '0.11.0', label: 'Reference-counting garbage collector', status: 'done' },
+  { version: '0.14.0', label: 'FFI (Foreign Function Interface)', status: 'done' },
+  { version: '0.16.0', label: 'Traits, inheritance, interfaces', status: 'done' },
+  { version: '0.16.5', label: 'Exceptions (try/catch/finally/throw)', status: 'done' },
+  { version: '0.17.0', label: 'Namespaces, ifdef, packed class, buffer<T>', status: 'done' },
+  { version: '0.18.0', label: 'Linux support (ARM64 & x86_64)', status: 'done' },
+  { version: '0.18.5', label: '--emit-asm, source maps, compiler timings', status: 'done' },
+  { version: '0.19.0', label: 'Constant folding optimizer pass', status: 'done' },
+  { version: '0.19.7', label: 'Optimizer: folding, propagation, DCE v3', status: 'current' },
+  { version: 'next', label: 'Shared/static libraries for compiled PHP modules', status: 'future' },
+  { version: 'next', label: 'PHP extension bridge for framework integration', status: 'future' },
+  { version: 'next', label: 'Constant propagation v2 (fixed-point, loop-aware)', status: 'future' },
+  { version: 'next', label: 'Peephole optimization (redundant load/store elimination)', status: 'future' },
+  { version: '1.0.0', label: 'Production-ready elephc', status: 'future' }
+];
+
+const platforms = [
+  { name: 'macOS ARM64', supported: true },
+  { name: 'Linux ARM64', supported: true },
+  { name: 'Linux x86_64', supported: true },
+  { name: 'Windows', supported: false },
+  { name: 'macOS x86_64', supported: false }
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <!-- ==================== NAVIGATION ==================== -->
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b bd bg-bg/80 backdrop-blur-xl">
+    <div class="container h-14 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5 group">
+        <span class="font-mono text-sm font-semibold tracking-wider txt-amber">elephc</span>
+        <span class="hidden sm:inline text-[11px] font-mono txt-muted">v0.19.7</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#pipeline" class="text-sm txt-dim hover:txt-bright transition-colors">Pipeline</a>
+        <a href="#features" class="text-sm txt-dim hover:txt-bright transition-colors">Features</a>
+        <a href="#proof" class="text-sm txt-dim hover:txt-bright transition-colors">Proof</a>
+        <a href="#install" class="text-sm txt-dim hover:txt-bright transition-colors">Install</a>
+        <a href="#roadmap" class="text-sm txt-dim hover:txt-bright transition-colors">Roadmap</a>
+        <a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noopener" class="txt-dim hover:txt-bright transition-colors" aria-label="GitHub">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015-2.895-.015-3.3 0-.315.225-.69.825-.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+      </div>
+      <button id="mobile-toggle" class="md:hidden txt-dim" aria-label="Menu">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden border-t bd/50 bg-bg/95 backdrop-blur-xl">
+      <div class="container py-4 flex flex-col gap-3">
+        <a href="#pipeline" class="text-sm py-1 txt-dim hover:txt-bright">Pipeline</a>
+        <a href="#features" class="text-sm py-1 txt-dim hover:txt-bright">Features</a>
+        <a href="#proof" class="text-sm py-1 txt-dim hover:txt-bright">Proof</a>
+        <a href="#install" class="text-sm py-1 txt-dim hover:txt-bright">Install</a>
+        <a href="#roadmap" class="text-sm py-1 txt-dim hover:txt-bright">Roadmap</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="relative min-h-screen flex flex-col justify-center overflow-hidden pt-20 pb-16">
+    <!-- Radial glow -->
+    <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] rounded-full pointer-events-none" style="background: radial-gradient(ellipse, rgba(201,169,110,0.08) 0%, transparent 70%);"></div>
+    
+    <div class="container relative z-10">
+      <!-- Version badge -->
+      <div class="flex justify-center mb-10">
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border bd text-xs font-mono txt-dim">
+          <span class="w-1.5 h-1.5 rounded-full bg-green animate-pulse"></span>
+          v0.19.7 &mdash; Optimizer: folding, propagation, DCE
+        </div>
+      </div>
+      
+      <!-- Headline -->
+      <h1 class="text-center font-display text-[clamp(3rem,10vw,7.5rem)] leading-[0.9] tracking-tight mb-8">
+        <span class="block txt-bright">PHP to</span>
+        <span class="block italic txt-amber" style="text-shadow: 0 0 60px rgba(201,169,110,0.15);">native assembly.</span>
+      </h1>
+      
+      <!-- Subtitle -->
+      <p class="text-center text-lg sm:text-xl txt-dim max-w-2xl mx-auto leading-relaxed mb-12">
+        <strong class="txt font-medium">elephc</strong> is a from-scratch compiler for a static subset of PHP.
+        Parse, type-check, lower to <span class="txt-cyan">native assembly</span>, assemble, and link.
+        <span class="block mt-2 txt">No interpreter. No VM. No Zend Engine. No opcode fallback.</span>
+      </p>
+      
+      <!-- CTA buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+        <a href="#install" class="inline-flex items-center gap-2 px-6 py-3 bg-amber txt-bg font-medium text-sm rounded-lg hover:brightness-110 transition-all">
+          Get started
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </a>
+        <a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 border bd txt-dim text-sm rounded-lg hover:bd-bright hover:txt transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015-2.895-.015-3.3 0-.315.225-.69.825-.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+      
+      <!-- Terminal + Assembly side by side -->
+      <div class="grid lg:grid-cols-2 gap-6 max-w-4xl mx-auto mb-16">
+        <Terminal 
+          animated={true}
+          lines={[
+            { prompt: '$ ', content: '<span class="cmd-name">elephc</span> <span class="cmd">hello.php</span>' },
+            { prompt: '$ ', content: '<span class="cmd">./hello</span>' },
+            { content: '<span class="text-green">Hello, World!</span>' }
+          ]}
+        />
+        <div class="code-block">
+          <div class="flex items-center justify-between px-4 py-2 border-b bd">
+            <span class="font-mono text-[11px] txt-muted">hello.s &mdash; macOS ARM64</span>
+            <span class="font-mono text-[10px] txt-muted">generated by elephc</span>
+          </div>
+          <pre is:raw class="text-[12px] leading-relaxed"><code><span class="txt-muted">; echo "Hello, World!"</span>
+<span class="txt-purple">_main:</span>
+    <span class="txt-cyan">stp</span>     <span class="txt">x29, x30, [sp, #-16]!</span>
+    <span class="txt-cyan">mov</span>     <span class="txt">x0, #14</span>              <span class="txt-muted">; string length</span>
+    <span class="txt-cyan">adrp</span>    <span class="txt">x1, _str@PAGE</span>
+    <span class="txt-cyan">add</span>     <span class="txt">x1, x1, _str@PAGEOFF</span>
+    <span class="txt-cyan">bl</span>      <span class="txt">_runtime_write</span>       <span class="txt-muted">; built-in</span>
+    <span class="txt-cyan">mov</span>     <span class="txt">w0, #0</span>               <span class="txt-muted">; exit 0</span>
+    <span class="txt-cyan">ldp</span>     <span class="txt">x29, x30, [sp], #16</span>
+    <span class="txt-cyan">ret</span></code></pre>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
+        <div class="flex flex-col items-center">
+          <span class="text-2xl sm:text-3xl font-display txt-bright">1800+</span>
+          <span class="text-xs sm:text-sm txt-dim mt-1 font-mono">tests</span>
+        </div>
+        <div class="w-px h-8 bg-border hidden sm:block"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-2xl sm:text-3xl font-display txt-bright">220+</span>
+          <span class="text-xs sm:text-sm txt-dim mt-1 font-mono">built-in functions</span>
+        </div>
+        <div class="w-px h-8 bg-border hidden sm:block"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-2xl sm:text-3xl font-display txt-bright">10</span>
+          <span class="text-xs sm:text-sm txt-dim mt-1 font-mono">data types</span>
+        </div>
+        <div class="w-px h-8 bg-border hidden sm:block"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-2xl sm:text-3xl font-display txt-bright">0</span>
+          <span class="text-xs sm:text-sm txt-dim mt-1 font-mono">external runtime deps</span>
+        </div>
+        <div class="w-px h-8 bg-border hidden sm:block"></div>
+        <div class="flex flex-col items-center">
+          <span class="text-2xl sm:text-3xl font-display txt-bright">3</span>
+          <span class="text-xs sm:text-sm txt-dim mt-1 font-mono">platforms</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scroll indicator -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+      <div class="w-px h-12 bg-gradient-to-b from-transparent to-[var(--border)]"></div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== POSITIONING ==================== -->
+  <section class="py-24 sm:py-32">
+    <div class="container">
+      <div class="grid lg:grid-cols-[0.85fr_1.15fr] gap-12 lg:gap-20 items-start">
+        <div class="reveal">
+          <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">Positioning</p>
+          <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+            A compiler for PHP,<br />
+            <span class="italic">not a PHP wrapper.</span>
+          </h2>
+          <p class="txt-dim leading-relaxed">
+            elephc stays close to the PHP ecosystem while drawing a clear technical line:
+            supported code is compiled ahead of time to native assembly. The roadmap extends
+            that model from standalone binaries into native libraries and a PHP extension bridge.
+          </p>
+        </div>
+        
+        <div class="grid sm:grid-cols-3 gap-4">
+          <div class="pipeline-card reveal" style="transition-delay: 0.1s;">
+            <p class="font-mono text-[11px] tracking-widest uppercase txt-amber mb-3">Compiler model</p>
+            <h3 class="text-base font-semibold txt-bright mb-3">From PHP source to native output</h3>
+            <p class="text-sm txt-dim leading-relaxed">elephc is not a PHP packager and does not bundle Zend/PHP. It parses PHP, type-checks a supported static subset, lowers it to native assembly, then assembles and links it with a small runtime included in the output.</p>
+          </div>
+          <div class="pipeline-card reveal" style="transition-delay: 0.2s;">
+            <p class="font-mono text-[11px] tracking-widest uppercase txt-amber mb-3">Runtime contract</p>
+            <h3 class="text-base font-semibold txt-bright mb-3">If elephc compiles it, it runs as native code.</h3>
+            <p class="text-sm txt-dim leading-relaxed">There is no interpreter, VM, Zend Engine, or opcode fallback waiting behind the compiled path. Unsupported dynamic behavior is a compiler boundary, not a silent fallback mode.</p>
+          </div>
+          <div class="pipeline-card reveal" style="transition-delay: 0.3s;">
+            <p class="font-mono text-[11px] tracking-widest uppercase txt-amber mb-3">Framework direction</p>
+            <h3 class="text-base font-semibold txt-bright mb-3">Keep your PHP framework, compile the hot paths.</h3>
+            <p class="text-sm txt-dim leading-relaxed">The long-term strategy is hybrid: WordPress, Laravel, Symfony, and other PHP applications can keep running on PHP while static modules move into native libraries or PHP extensions.</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FAQ cards -->
+      <div class="mt-16 grid md:grid-cols-2 gap-6">
+        <article class="pipeline-card reveal">
+          <h3 class="text-lg font-semibold txt-bright mb-3">How is elephc different from PHP packagers or other PHP AOT systems?</h3>
+          <p class="text-sm txt-dim leading-relaxed">elephc is a from-scratch compiler for a static subset of PHP. It is not a packager for the PHP runtime, and it does not ship Zend/PHP inside the result. The pipeline is parse, type-check, lower to native assembly, assemble, link, and include a small runtime in the binary. If elephc compiles it, it runs as native code.</p>
+        </article>
+        <article class="pipeline-card reveal">
+          <h3 class="text-lg font-semibold txt-bright mb-3">Can elephc work with frameworks?</h3>
+          <p class="text-sm txt-dim leading-relaxed">Not a drop-in replacement for an entire dynamic framework today, but a path to accelerate static modules inside existing PHP applications. The intended path is pragmatic: keep the framework on PHP, isolate static and performance-sensitive modules, and compile those into standalone binaries today, then native libraries or PHP extensions as that bridge lands.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== PIPELINE ==================== -->
+  <section id="pipeline" class="py-24 sm:py-32">
+    <div class="container">
+      <div class="text-center max-w-2xl mx-auto mb-16 reveal">
+        <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">How it works</p>
+        <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+          The compilation<br />
+          <span class="italic">pipeline.</span>
+        </h2>
+        <p class="txt-dim leading-relaxed">
+          Seven well-defined phases compile your PHP source into a standalone native binary.
+          No Zend Engine, VM, interpreter, or opcode fallback is involved in the compiled path.
+        </p>
+      </div>
+      
+      <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+        <!-- Pipeline stages -->
+        <div class="space-y-0 reveal">
+          {pipelineStages.map((stage) => (
+            <PipelineStage {...stage} />
+          ))}
+        </div>
+        
+        <!-- Code transformation visualization -->
+        <div class="lg:sticky lg:top-24 space-y-4 reveal">
+          <div class="code-block">
+            <div class="flex items-center justify-between px-4 py-2 border-b bd">
+              <span class="font-mono text-[11px] txt-muted">source.php</span>
+              <span class="font-mono text-[10px] txt-amber">input</span>
+            </div>
+            <pre is:raw class="text-[12px] leading-relaxed"><code><span class="txt-muted">&lt;?php</span>
+<span class="txt-purple">function</span> <span class="txt-amber">factorial</span>(<span class="txt-cyan">int</span> <span class="txt">$n</span>): <span class="txt-cyan">int</span> {
+    <span class="txt-purple">if</span> (<span class="txt">$n</span> &lt;= <span class="txt-amber">1</span>) {
+        <span class="txt-purple">return</span> <span class="txt-amber">1</span>;
+    }
+    <span class="txt-purple">return</span> <span class="txt">$n</span> * <span class="txt-amber">factorial</span>(<span class="txt">$n</span> - <span class="txt-amber">1</span>);
+}
+<span class="txt-purple">echo</span> <span class="txt-amber">factorial</span>(<span class="txt-amber">5</span>);</code></pre>
+          </div>
+          
+          <div class="flex justify-center">
+            <svg class="w-6 h-6 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 14l-7 7-7-7"/></svg>
+          </div>
+          
+          <div class="code-block">
+            <div class="flex items-center justify-between px-4 py-2 border-b bd">
+              <span class="font-mono text-[11px] txt-muted">factorial.s &mdash; ARM64</span>
+              <span class="font-mono text-[10px] txt-green">output</span>
+            </div>
+            <pre is:raw class="text-[12px] leading-relaxed"><code><span class="txt-muted">; function factorial(int $n): int</span>
+<span class="txt-purple">_factorial:</span>
+    <span class="txt-cyan">sub</span>     <span class="txt">sp, sp, #32</span>
+    <span class="txt-cyan">stp</span>     <span class="txt">x29, x30, [sp, #16]</span>
+    <span class="txt-cyan">str</span>     <span class="txt">x0, [sp, #8]</span>       <span class="txt-muted">; $n</span>
+    <span class="txt-cyan">ldr</span>     <span class="txt">x8, [sp, #8]</span>
+    <span class="txt-cyan">cmp</span>     <span class="txt">x8, #1</span>
+    <span class="txt-cyan">b.gt</span>    <span class="txt">.Lrecurse</span>
+    <span class="txt-cyan">mov</span>     <span class="txt">x0, #1</span>             <span class="txt-muted">; base case</span>
+    <span class="txt-cyan">b</span>       <span class="txt">.Lend</span>
+<span class="txt-purple">.Lrecurse:</span>
+    <span class="txt-cyan">ldr</span>     <span class="txt">x0, [sp, #8]</span>
+    <span class="txt-cyan">sub</span>     <span class="txt">x0, x0, #1</span>
+    <span class="txt-cyan">bl</span>      <span class="txt">_factorial</span>
+    <span class="txt-cyan">ldr</span>     <span class="txt">x8, [sp, #8]</span>
+    <span class="txt-cyan">mul</span>     <span class="txt">x0, x8, x0</span>
+<span class="txt-purple">.Lend:</span>
+    <span class="txt-cyan">ldp</span>     <span class="txt">x29, x30, [sp, #16]</span>
+    <span class="txt-cyan">add</span>     <span class="txt">sp, sp, #32</span>
+    <span class="txt-cyan">ret</span></code></pre>
+          </div>
+          
+          <div class="flex items-center gap-3 px-4 py-3 border bd rounded-lg bg-elevated">
+            <span class="font-mono text-[11px] txt-muted">pipeline:</span>
+            <span class="font-mono text-[10px] txt-amber">.php</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-cyan">tokens</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-purple">AST</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-green">typed AST</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-amber">.s</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-dim">.o</span>
+            <svg class="w-3 h-3 txt-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="font-mono text-[10px] txt-bright">binary</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== FEATURES ==================== -->
+  <section id="features" class="py-24 sm:py-32">
+    <div class="container">
+      <div class="max-w-2xl mb-16 reveal">
+        <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">Language support</p>
+        <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+          What's <span class="italic">supported.</span>
+        </h2>
+        <p class="txt-dim leading-relaxed">
+          elephc compiles a growing static subset of PHP to native code. Most supported programs are ordinary PHP,
+          while pointer helpers like <code>ptr()</code> and <code>ptr_cast&lt;T&gt;()</code> intentionally extend the syntax
+          for low-level memory work.
+        </p>
+      </div>
+      
+      <!-- Types grid -->
+      <div class="mb-16 reveal">
+        <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-6">Type system</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {types.map((t) => (
+            <div class="flex items-start gap-3 p-4 border bd rounded-lg bg-elevated hover:bd-bright transition-colors">
+              <code class="txt-amber font-mono text-sm font-medium min-w-[80px]">{t.name}</code>
+              <code class="txt-dim font-mono text-xs">{t.example}</code>
+            </div>
+          ))}
+        </div>
+        <p class="mt-4 text-xs txt-muted">
+          A variable's type is set at first assignment. Compatible types (int, float, bool, null) can be reassigned between each other.
+          Type errors are caught at compile time with line:col error messages.
+        </p>
+      </div>
+      
+      <!-- Constructs -->
+      <div class="mb-16 reveal">
+        <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-6">Supported constructs</h3>
+        <div class="flex flex-wrap gap-2">
+          {constructs.map((c) => (
+            <span class="feature-tag">{c}</span>
+          ))}
+        </div>
+      </div>
+      
+      <!-- Platform matrix + Built-ins -->
+      <div class="grid md:grid-cols-2 gap-8">
+        <div class="reveal">
+          <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-6">Platform matrix</h3>
+          <div class="border bd rounded-lg overflow-hidden">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b bd bg-elevated">
+                  <th class="text-left px-4 py-3 font-mono text-xs txt-dim font-medium">Target</th>
+                  <th class="text-left px-4 py-3 font-mono text-xs txt-dim font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {platforms.map((p) => (
+                  <tr class="border-b bd last:border-0">
+                    <td class="px-4 py-3 font-mono txt">{p.name}</td>
+                    <td class="px-4 py-3">
+                      {p.supported ? (
+                        <span class="inline-flex items-center gap-1.5 txt-green">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                          <span class="text-xs">Supported</span>
+                        </span>
+                      ) : (
+                        <span class="inline-flex items-center gap-1.5 txt-muted">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                          <span class="text-xs">Not yet</span>
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="reveal">
+          <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-6">Built-in library</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="p-4 border bd rounded-lg bg-elevated">
+              <p class="font-mono text-[11px] txt-amber mb-2">strings/</p>
+              <p class="txt-dim text-xs">strlen, substr, strpos, str_replace, trim, strtolower, strtoupper...</p>
+            </div>
+            <div class="p-4 border bd rounded-lg bg-elevated">
+              <p class="font-mono text-[11px] txt-cyan mb-2">arrays/</p>
+              <p class="txt-dim text-xs">count, array_push, array_pop, array_merge, in_array, array_keys...</p>
+            </div>
+            <div class="p-4 border bd rounded-lg bg-elevated">
+              <p class="font-mono text-[11px] txt-green mb-2">math/</p>
+              <p class="txt-dim text-xs">sin, cos, tan, log, exp, sqrt, abs, min, max, floor, ceil...</p>
+            </div>
+            <div class="p-4 border bd rounded-lg bg-elevated">
+              <p class="font-mono text-[11px] txt-purple mb-2">io/ system/</p>
+              <p class="txt-dim text-xs">echo, print, fopen, fread, fwrite, file_get_contents, getenv...</p>
+            </div>
+          </div>
+          <p class="mt-3 text-xs txt-muted">220+ built-in functions across 10 categories. One file per function in the compiler source.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== PROOF ==================== -->
+  <section id="proof" class="py-24 sm:py-32">
+    <div class="container">
+      <div class="max-w-2xl mb-12 reveal">
+        <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">Proof</p>
+        <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+          Show, don't <span class="italic">tell.</span>
+        </h2>
+        <p class="txt-dim leading-relaxed">
+          The Doom-style 3D engine below is written entirely in PHP and compiled to a native binary with elephc.
+          No hand-written C, no FFI wrappers, no interpreter in the loop — just PHP source lowered to ARM64 assembly,
+          assembled, linked, and executed as a standalone binary.
+        </p>
+      </div>
+      
+      <div class="reveal">
+        <div class="relative rounded-2xl overflow-hidden border bd-amber/20 shadow-2xl" style="box-shadow: 0 25px 80px -20px rgba(201,169,110,0.08);">
+          <video class="w-full block" autoplay loop muted playsinline poster="">
+            <source src="https://media.nahi.me/illegalstudio/elephc/elephc-doom-3d-movement-4.mp4" type="video/mp4" />
+          </video>
+          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[var(--bg)]/95 via-[var(--bg)]/60 to-transparent px-6 py-6 sm:px-8 sm:py-8">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <p class="font-mono text-sm txt-amber mb-1">Doom-style 3D engine</p>
+                <p class="text-xs txt-dim">Written in PHP, compiled to a native binary with elephc</p>
+              </div>
+              <div class="flex items-center gap-4 text-xs font-mono txt-muted">
+                <span>~800 lines PHP</span>
+                <span class="w-px h-3 bg-border"></span>
+                <span>ARM64 assembly output</span>
+                <span class="w-px h-3 bg-border"></span>
+                <span>~120 KB binary</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Technical details -->
+      <div class="mt-8 grid sm:grid-cols-3 gap-4 reveal">
+        <div class="p-5 border bd rounded-lg bg-elevated">
+          <p class="font-mono text-[11px] txt-amber mb-2">Rendering</p>
+          <p class="text-sm txt-dim">Software rasterizer with texture-mapped walls, floors, and ceilings. Pure PHP arithmetic compiled to native SIMD-capable ARM64.</p>
+        </div>
+        <div class="p-5 border bd rounded-lg bg-elevated">
+          <p class="font-mono text-[11px] txt-cyan mb-2">Input & loop</p>
+          <p class="text-sm txt-dim">Real-time keyboard input handled through compiled I/O builtins. Main game loop runs at 60 FPS without a garbage collector pause.</p>
+        </div>
+        <div class="p-5 border bd rounded-lg bg-elevated">
+          <p class="font-mono text-[11px] txt-green mb-2">Memory</p>
+          <p class="text-sm txt-dim">Frame buffer and texture data managed through the elephc runtime's reference-counting allocator. No Zend zvals, no hash tables.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== GET STARTED ==================== -->
+  <section id="install" class="py-24 sm:py-32">
+    <div class="container">
+      <div class="grid lg:grid-cols-2 gap-16 lg:gap-24">
+        <!-- Left: Install -->
+        <div class="reveal">
+          <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">Get started</p>
+          <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+            Install the<br />
+            <span class="italic">PHP compiler.</span>
+          </h2>
+          <p class="txt-dim leading-relaxed mb-10">
+            elephc is written in Rust and targets macOS ARM64, Linux ARM64, and Linux x86_64.
+            Three commands to install the compiler and compile your first PHP file to a native binary.
+          </p>
+          
+          <!-- Requirements -->
+          <div class="mb-8">
+            <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-4">Requirements</h3>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="text-sm txt">Rust toolchain (<code class="font-mono text-xs">cargo</code>)</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="text-sm txt">A native assembler and linker for your host/target</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="text-sm txt">macOS: Xcode Command Line Tools <em class="txt-dim">(or Homebrew)</em></span>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="text-sm txt">Linux: standard native toolchain (<code class="font-mono text-xs">as</code>, <code class="font-mono text-xs">ld</code>, libc dev files)</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Install steps -->
+          <div class="space-y-5">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs txt-dim">1. Install</span>
+                <button class="copy-btn" data-copy="brew install illegalstudio/tap/elephc">Copy</button>
+              </div>
+              <div class="code-block">
+                <pre is:raw class="text-[13px]"><code><span class="txt-muted"># Homebrew (recommended)</span>
+<span class="txt-dim">$ </span><span class="txt-amber">brew</span> <span class="txt">install illegalstudio/tap/elephc</span>
+
+<span class="txt-muted"># Or from source</span>
+<span class="txt-dim">$ </span><span class="txt">git clone https://github.com/illegalstudio/elephc.git</span>
+<span class="txt-dim">$ </span><span class="txt">cd elephc && </span><span class="txt-amber">cargo</span> <span class="txt">build --release</span></code></pre>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs txt-dim">2. Compile & run</span>
+                <button class="copy-btn" data-copy="elephc hello.php && ./hello">Copy</button>
+              </div>
+              <div class="code-block">
+                <pre is:raw class="text-[13px]"><code><span class="txt-dim">$ </span><span class="txt-amber">elephc</span> <span class="txt">hello.php</span>
+<span class="txt-dim">$ </span><span class="txt">./hello</span>
+<span class="txt-green">Hello, World!</span></code></pre>
+              </div>
+            </div>
+            
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs txt-dim">3. Run the tests</span>
+                <button class="copy-btn" data-copy="cargo test">Copy</button>
+              </div>
+              <div class="code-block">
+                <pre is:raw class="text-[13px]"><code><span class="txt-dim">$ </span><span class="txt-amber">cargo</span> <span class="txt">test</span>
+<span class="txt-muted"># 1800+ tests, all passing</span></code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right: Project structure + Roadmap -->
+        <div class="reveal">
+          <!-- Project structure -->
+          <div class="mb-12">
+            <h3 class="font-mono text-xs txt-dim tracking-widest uppercase mb-6">Project structure</h3>
+            <div class="code-block p-6 font-mono text-[13px] leading-loose txt-dim">
+              <div><span class="txt-bright">src/</span></div>
+              <div class="ml-4"><span class="txt">main.rs</span> <span class="txt-muted">&mdash; CLI entry point</span></div>
+              <div class="ml-4"><span class="txt-amber">lexer/</span> <span class="txt-muted">&mdash; source &rarr; tokens</span></div>
+              <div class="ml-4"><span class="txt-cyan">parser/</span> <span class="txt-muted">&mdash; tokens &rarr; AST</span></div>
+              <div class="ml-4"><span class="txt-purple">types/</span> <span class="txt-muted">&mdash; static type checking</span></div>
+              <div class="ml-4"><span class="txt-green">codegen/</span> <span class="txt-muted">&mdash; AST &rarr; native asm</span></div>
+              <div class="ml-8"><span class="txt">builtins/</span> <span class="txt-muted">&mdash; one file per function</span></div>
+              <div class="ml-12 txt-muted opacity-60">strings/ arrays/ math/ types/ io/ system/</div>
+              <div class="ml-8"><span class="txt">runtime/</span> <span class="txt-muted">&mdash; target runtime routines</span></div>
+              <div class="ml-12 txt-muted opacity-60">strings/ arrays/ exceptions/ io/ system/</div>
+              <div class="ml-4"><span class="txt-red">errors/</span> <span class="txt-muted">&mdash; line:col formatting</span></div>
+            </div>
+          </div>
+          
+          <!-- Quick link to docs -->
+          <div class="p-6 border bd rounded-xl bg-elevated">
+            <p class="font-mono text-[11px] txt-amber tracking-widest uppercase mb-3">Documentation</p>
+            <p class="text-sm txt-dim mb-4">Language reference, ARM64 assembly primer, memory model, and 50+ working code examples that ship with the compiler.</p>
+            <a href="#docs" class="inline-flex items-center gap-2 text-sm txt hover:txt-amber transition-colors">
+              Browse docs
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="section-rule" />
+
+  <!-- ==================== ROADMAP ==================== -->
+  <section id="roadmap" class="py-24 sm:py-32">
+    <div class="container">
+      <div class="max-w-2xl mb-16 reveal">
+        <p class="txt-amber font-mono text-xs tracking-widest uppercase mb-4">Roadmap</p>
+        <h2 class="text-4xl sm:text-5xl font-display leading-tight mb-6">
+          Toward <span class="italic">v1.0.0.</span>
+        </h2>
+        <p class="txt-dim leading-relaxed">
+          elephc is at v0.19.7. The path to production readiness is measured in compiler passes,
+          platform targets, and integration bridges — not marketing milestones.
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 gap-x-16 gap-y-3 max-w-4xl reveal">
+        {roadmap.map((item) => (
+          <div class="roadmap-item py-2.5 border-b bd">
+            <div class={`roadmap-dot ${item.status}`}></div>
+            <code class="text-xs font-mono w-12 shrink-0 txt">{item.version}</code>
+            <span class={`text-sm ${item.status === 'future' ? 'txt-muted' : 'txt-dim'}`}>{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="py-16 border-t bd">
+    <div class="container">
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+        <div class="lg:col-span-1">
+          <p class="font-mono text-sm font-semibold tracking-wider txt-amber mb-4">elephc</p>
+          <p class="text-sm txt-dim leading-relaxed">
+            An open-source PHP compiler that lowers a static subset of PHP to native assembly for
+            macOS ARM64, Linux ARM64, and Linux x86_64. Written in Rust. MIT licensed.
+          </p>
+        </div>
+        <div>
+          <h4 class="font-mono text-xs txt-dim tracking-widest uppercase mb-4">Project</h4>
+          <div class="space-y-2.5">
+            <a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noopener" class="block text-sm txt hover:txt-amber transition-colors">GitHub</a>
+            <a href="#install" class="block text-sm txt hover:txt-amber transition-colors">Installation</a>
+            <a href="#features" class="block text-sm txt hover:txt-amber transition-colors">Features</a>
+            <a href="#docs" class="block text-sm txt hover:txt-amber transition-colors">Documentation</a>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-mono text-xs txt-dim tracking-widest uppercase mb-4">Learn</h4>
+          <div class="space-y-2.5">
+            <a href="#pipeline" class="block text-sm txt hover:txt-amber transition-colors">How it works</a>
+            <a href="#features" class="block text-sm txt hover:txt-amber transition-colors">Language reference</a>
+            <span class="block text-sm txt-muted">ARM64 assembly primer</span>
+            <span class="block text-sm txt-muted">Memory model</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="font-mono text-xs txt-dim tracking-widest uppercase mb-4">The story</h4>
+          <p class="text-sm txt-dim leading-relaxed">
+            My first "serious programming" book was <em>PHP 4 and MySQL</em>.
+            That book turned passion into profession. elephc fills a gap I always missed &mdash;
+            compiling PHP modules to native code without leaving the PHP ecosystem behind.
+          </p>
+        </div>
+      </div>
+      <div class="pt-6 border-t bd flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-xs txt-muted">
+          A project by <a href="https://illegal.studio" target="_blank" rel="noopener noreferrer" class="txt-dim hover:txt-amber transition-colors">Illegal Studio</a> and <a href="https://nahi.me" target="_blank" rel="noopener noreferrer" class="txt-dim hover:txt-amber transition-colors">Vincenzo Petrucci</a>
+        </p>
+        <p class="text-xs txt-muted">MIT License &copy; 2026</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== SCRIPTS ==================== -->
+  <script>
+    // Mobile menu toggle
+    const toggle = document.getElementById('mobile-toggle');
+    const menu = document.getElementById('mobile-menu');
+    toggle?.addEventListener('click', () => menu?.classList.toggle('hidden'));
+    menu?.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => menu.classList.add('hidden'));
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const text = btn.dataset.copy;
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          btn.textContent = 'Copied';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        } catch (e) {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          btn.textContent = 'Copied';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        }
+      });
+    });
+
+    // Pipeline stage highlighting on scroll
+    const stages = document.querySelectorAll('[data-stage]');
+    const stageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          stages.forEach(s => s.classList.remove('active'));
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.5 });
+    stages.forEach(s => stageObserver.observe(s));
+  </script>
+</Layout>

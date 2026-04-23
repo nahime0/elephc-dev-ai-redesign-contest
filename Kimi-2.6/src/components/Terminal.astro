@@ -1,0 +1,43 @@
+---
+interface Props {
+  lines: Array<{
+    prompt?: string;
+    content: string;
+    class?: string;
+  }>;
+  title?: string;
+  animated?: boolean;
+}
+
+const { lines, title = 'terminal', animated = false } = Astro.props;
+---
+
+<div class={`terminal ${animated ? 'terminal-animated' : ''}`}>
+  <div class="terminal-header">
+    <span class="terminal-dot red"></span>
+    <span class="terminal-dot amber"></span>
+    <span class="terminal-dot green"></span>
+    <span class="ml-2 font-mono text-[11px] text-muted">{title}</span>
+  </div>
+  <div class="terminal-body">
+    {lines.map((line, i) => (
+      <div class={line.class || ''} style={animated ? `animation-delay: ${(i * 0.8 + 0.5).toFixed(1)}s` : undefined}>
+        {line.prompt !== undefined && <span class="prompt">{line.prompt}</span>}
+        <span class="cmd" set:html={line.content} />
+      </div>
+    ))}
+    {animated && (
+      <div class="mt-1">
+        <span class="prompt">$ </span>
+        <span class="cmd-name" style="animation: type-cursor 1s step-end infinite;">_</span>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .terminal-animated .terminal-body > div {
+    opacity: 0;
+    animation: fade-up 0.4s ease forwards;
+  }
+</style>

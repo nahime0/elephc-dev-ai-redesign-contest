@@ -1,0 +1,93 @@
+---
+interface Props {
+  number: string;
+  icon: string;
+  title: string;
+  description: string;
+  detail: string;
+  color: string;
+}
+
+const { number, icon, title, description, detail, color } = Astro.props;
+---
+
+<div class="pipeline-stage" data-stage>
+  <div class="stage-header">
+    <div class="stage-number" style={`color: ${color}; border-color: ${color}`}>{number}</div>
+    <div class="stage-icon" style={`color: ${color}`}>{icon}</div>
+    <div class="stage-title">{title}</div>
+  </div>
+  <p class="stage-description">{description}</p>
+  <p class="stage-detail">{detail}</p>
+</div>
+
+<style>
+  .pipeline-stage {
+    padding: 20px 24px;
+    border-left: 2px solid var(--border);
+    transition: border-color 0.4s ease, background 0.4s ease;
+    position: relative;
+  }
+  .pipeline-stage::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 24px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+  }
+  .pipeline-stage.active {
+    border-left-color: var(--amber);
+    background: linear-gradient(90deg, var(--amber-glow), transparent 60%);
+  }
+  .pipeline-stage.active::before {
+    background: var(--amber);
+    box-shadow: 0 0 10px var(--amber-glow);
+  }
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .stage-number {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid;
+    border-radius: 50%;
+    opacity: 0.7;
+  }
+  .stage-icon {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .stage-title {
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .stage-description {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 4px;
+    padding-left: 34px;
+  }
+  .stage-detail {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    padding-left: 34px;
+  }
+</style>
