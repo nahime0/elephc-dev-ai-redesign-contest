@@ -1,6 +1,6 @@
 # elephc.dev — AI Redesign Contest
 
-A head-to-head comparison of three AI coding agents tackling the **same design brief**, from the **same blank Astro starter**, with the **same prompt**.
+A head-to-head comparison of five AI coding agents tackling the **same design brief**, from the **same blank Astro starter**, with the **same prompt**.
 
 The goal: evaluate how each agent interprets an open-ended design task — visual taste, code quality, information architecture, copy, performance, and the ability to produce something that feels production-grade rather than generic AI output.
 
@@ -16,7 +16,13 @@ Each agent gets its own isolated working directory:
 | --- | --- |
 | [`Claude-4.7/`](./Claude-4.7) | Anthropic — Claude Opus 4.7 |
 | [`GPT-5.4/`](./GPT-5.4) | OpenAI — GPT-5.4 |
-| [`Kimi-2.6/`](./Kimi-2.6) | Moonshot — Kimi 2.6 |
+| [`GPT-5.5/`](./GPT-5.5) | OpenAI — GPT-5.5 |
+| [`Kimi-2.6/`](./Kimi-2.6) | Moonshot — Kimi 2.6 (run via Kimi Code) |
+| [`Kimi-2.6-opencode/`](./Kimi-2.6-opencode) | Moonshot — Kimi 2.6 (run via opencode) |
+
+### Why Kimi 2.6 opencode?
+
+Kimi 2.6, when run through Kimi Code, completely failed the task — you can see it for yourself in the screenshots inside the `output` folder. Since I still think it's a solid model, I decided to give it a second chance and re-run it through opencode instead of Kimi Code. The result is on a whole other level.
 
 ## Rules
 
@@ -39,7 +45,7 @@ Each result is judged on:
 ## Running a contestant locally
 
 ```bash
-cd Claude-4.7   # or GPT-5.4, Kimi-2.6
+cd Claude-4.7   # or GPT-5.4, GPT-5.5, Kimi-2.6, Kimi-2.6-opencode
 npm install
 npm run dev
 ```
