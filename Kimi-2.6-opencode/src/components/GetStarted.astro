@@ -1,0 +1,319 @@
+---
+---
+
+<section class="get-started" id="install">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">Get started</span>
+      <h2 class="section-title">Install the PHP compiler</h2>
+      <p class="section-description">
+        elephc is written in Rust and targets macOS ARM64, Linux ARM64, and Linux x86_64. 
+        Three commands to install the compiler and compile your first PHP file to a native binary.
+      </p>
+    </div>
+    
+    <div class="install-grid">
+      <div class="install-main fade-in">
+        <div class="install-steps">
+          <div class="install-step">
+            <div class="install-step-number">1</div>
+            <div class="install-step-content">
+              <h3>Install</h3>
+              <p>Homebrew is the recommended method. Or build from source if you prefer.</p>
+              
+              <div class="terminal-window">
+                <div class="terminal-header">
+                  <div class="terminal-dot red"></div>
+                  <div class="terminal-dot yellow"></div>
+                  <div class="terminal-dot green"></div>
+                  <span class="terminal-title">install.sh</span>
+                </div>
+                <div class="terminal-body">
+                  <div class="terminal-line">
+                    <span class="syntax-comment"># Homebrew (recommended)</span>
+                  </div>
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">brew install illegalstudio/tap/elephc</span>
+                  </div>
+                  <div class="terminal-line"><br /></div>
+                  <div class="terminal-line">
+                    <span class="syntax-comment"># Or from source</span>
+                  </div>
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">git clone https://github.com/illegalstudio/elephc.git</span>
+                  </div>
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">cd elephc && cargo build --release</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="install-step">
+            <div class="install-step-number">2</div>
+            <div class="install-step-content">
+              <h3>Compile & run</h3>
+              <p>Create a PHP file and compile it to a native binary.</p>
+              
+              <div class="terminal-window">
+                <div class="terminal-header">
+                  <div class="terminal-dot red"></div>
+                  <div class="terminal-dot yellow"></div>
+                  <div class="terminal-dot green"></div>
+                  <span class="terminal-title">hello.php</span>
+                </div>
+                <div class="terminal-body">
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">echo '<span class="syntax-string"><?php echo "Hello, World!\n";</span>' > hello.php</span>
+                  </div>
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">elephc hello.php</span>
+                  </div>
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">./hello</span>
+                  </div>
+                  <div class="terminal-line terminal-output">Hello, World!</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="install-step">
+            <div class="install-step-number">3</div>
+            <div class="install-step-content">
+              <h3>Run the tests</h3>
+              <p>Verify everything is working with the full test suite.</p>
+              
+              <div class="terminal-window">
+                <div class="terminal-header">
+                  <div class="terminal-dot red"></div>
+                  <div class="terminal-dot yellow"></div>
+                  <div class="terminal-dot green"></div>
+                  <span class="terminal-title">verify</span>
+                </div>
+                <div class="terminal-body">
+                  <div class="terminal-line">
+                    <span class="terminal-prompt">$</span> <span class="terminal-command">cargo test</span>
+                  </div>
+                  <div class="terminal-line terminal-output">
+                    running 1800+ tests... <span class="syntax-green">all passing</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="install-sidebar fade-in">
+        <div class="requirements-card">
+          <h3>Requirements</h3>
+          
+          <div class="requirement-item">
+            <div class="requirement-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="requirement-text">
+              <strong>Rust toolchain</strong>
+              <span>cargo required for build</span>
+            </div>
+          </div>
+          
+          <div class="requirement-item">
+            <div class="requirement-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+            <div class="requirement-text">
+              <strong>Native toolchain</strong>
+              <span>as, ld for your target</span>
+            </div>
+          </div>
+          
+          <div class="requirement-item">
+            <div class="requirement-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+            <div class="requirement-text">
+              <strong>macOS or Linux</strong>
+              <span>ARM64 or x86_64</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="project-structure">
+          <h3>Project structure</h3>
+          <div class="structure-tree">
+            <pre><code>src/
+<span class="tree-line">├── main.rs          <span class="syntax-comment"># CLI entry point</span></span>
+<span class="tree-line">├── lexer/           <span class="syntax-comment"># source → tokens</span></span>
+<span class="tree-line">├── parser/          <span class="syntax-comment"># tokens → AST</span></span>
+<span class="tree-line">├── types/           <span class="syntax-comment"># static type checking</span></span>
+<span class="tree-line">├── codegen/         <span class="syntax-comment"># AST → native asm</span></span>
+<span class="tree-line">├── builtins/        <span class="syntax-comment"># one file per function</span></span>
+<span class="tree-line">│   ├── strings/</span>
+<span class="tree-line">│   ├── arrays/</span>
+<span class="tree-line">│   ├── math/</span>
+<span class="tree-line">│   ├── types/</span>
+<span class="tree-line">│   ├── io/</span>
+<span class="tree-line">│   └── system/</span>
+<span class="tree-line">├── runtime/         <span class="syntax-comment"># target runtime routines</span></span>
+<span class="tree-line">│   ├── strings/</span>
+<span class="tree-line">│   ├── arrays/</span>
+<span class="tree-line">│   ├── exceptions/</span>
+<span class="tree-line">│   ├── io/</span>
+<span class="tree-line">│   └── system/</span>
+<span class="tree-line">└── errors/          <span class="syntax-comment"># line:col formatting</span></span></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .get-started {
+    padding: var(--space-4xl) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .install-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: var(--space-2xl);
+    align-items: start;
+  }
+  
+  .install-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+  }
+  
+  .install-step {
+    display: flex;
+    gap: var(--space-lg);
+  }
+  
+  .install-step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+  }
+  
+  .install-step-content {
+    flex: 1;
+  }
+  
+  .install-step-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+  }
+  
+  .install-step-content p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-md);
+  }
+  
+  .install-step-content .terminal-window {
+    margin-top: var(--space-md);
+  }
+  
+  .install-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    position: sticky;
+    top: 100px;
+  }
+  
+  .requirements-card,
+  .project-structure {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+  
+  .requirements-card h3,
+  .project-structure h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .requirement-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .requirement-item:last-child {
+    border-bottom: none;
+  }
+  
+  .requirement-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    color: var(--accent-blue);
+  }
+  
+  .requirement-text {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .requirement-text strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  
+  .requirement-text span {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+  
+  .structure-tree pre {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+  }
+  
+  .tree-line {
+    display: block;
+  }
+  
+  @media (max-width: 768px) {
+    .install-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .install-sidebar {
+      position: relative;
+      top: 0;
+    }
+    
+    .install-step {
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+  }
+</style>

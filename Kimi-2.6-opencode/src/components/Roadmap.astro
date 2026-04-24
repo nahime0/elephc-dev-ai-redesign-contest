@@ -1,0 +1,297 @@
+---
+---
+
+<section class="roadmap" id="roadmap">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">Roadmap</span>
+      <h2 class="section-title">Toward v1.0.0</h2>
+      <p class="section-description">
+        An honest snapshot of where we are and what's next. 
+        v0.19.x is the current optimizer-focused release line heading toward production readiness.
+      </p>
+    </div>
+    
+    <div class="roadmap-content">
+      <div class="roadmap-current fade-in">
+        <div class="roadmap-current-header">
+          <span class="roadmap-current-badge">Current</span>
+          <span class="roadmap-version">v0.19.7</span>
+        </div>        
+        <h3>Optimizer: folding, propagation, DCE</h3>
+        <p>The v0.19.x release line is focused on optimization passes: constant folding, dead-code elimination, and local constant propagation. These are the foundations that make compiled PHP competitive with hand-written native code.</p>
+        
+        <div class="roadmap-milestones">
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Constant folding optimizer pass</span>
+          </div>
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Dead-code elimination after typecheck</span>
+          </div>
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Local purity / may-throw effect analysis</span>
+          </div>
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Local constant propagation across branches</span>
+          </div>
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Control-flow normalization pass</span>
+          </div>
+          <div class="milestone milestone-done">
+            <span class="milestone-marker">✓</span>
+            <span class="milestone-text">Path-aware DCE (v2 & v3)</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="roadmap-future fade-in">
+        <div class="roadmap-future-header">
+          <span class="roadmap-future-badge">Next</span>
+        </div>
+        
+        <div class="roadmap-future-grid">
+          <div class="future-card">
+            <div class="future-card-tag">Integration</div>
+            <h4>Shared/static libraries</h4>
+            <p>Compile PHP modules as native libraries that can be linked into existing applications.</p>
+          </div>
+          
+          <div class="future-card">
+            <div class="future-card-tag">Integration</div>
+            <h4>PHP extension bridge</h4>
+            <p>Drop compiled modules into WordPress, Laravel, or Symfony without rewriting your app.</p>
+          </div>
+          
+          <div class="future-card">
+            <div class="future-card-tag">Optimizer</div>
+            <h4>Constant propagation v2</h4>
+            <p>Fixed-point, loop-aware analysis for deeper optimization across the whole program.</p>
+          </div>
+          
+          <div class="future-card">
+            <div class="future-card-tag">Optimizer</div>
+            <h4>Peephole optimization</h4>
+            <p>Redundant load/store elimination and other low-level assembly optimizations.</p>
+          </div>
+        </div>
+        
+        <div class="v1-preview">
+          <div class="v1-badge">1.0.0</div>
+          <div class="v1-content">
+            <h4>Production-ready</h4>
+            <p>Stable compiler, complete language coverage for the static subset, and framework integration tools. The goal: compile your performance-sensitive PHP modules and drop them into production.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .roadmap {
+    padding: var(--space-4xl) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .roadmap-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xl);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .roadmap-current {
+    padding: var(--space-2xl);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+  
+  .roadmap-current-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+  }
+  
+  .roadmap-current-badge {
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-green);
+  }
+  
+  .roadmap-version {
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .roadmap-current h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .roadmap-current > p {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    margin-bottom: var(--space-xl);
+  }
+  
+  .roadmap-milestones {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  
+  .milestone {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+  }
+  
+  .milestone-done .milestone-marker {
+    color: var(--accent-green);
+  }
+  
+  .milestone-marker {
+    font-weight: 700;
+    font-size: 0.875rem;
+  }
+  
+  .milestone-text {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+  }
+  
+  .roadmap-future {
+    padding: var(--space-2xl);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+  
+  .roadmap-future-header {
+    margin-bottom: var(--space-lg);
+  }
+  
+  .roadmap-future-badge {
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(125, 211, 252, 0.1);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent-blue);
+  }
+  
+  .roadmap-future-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+  
+  .future-card {
+    padding: var(--space-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+  }
+  
+  .future-card:hover {
+    border-color: var(--border-prominent);
+    transform: translateY(-2px);
+  }
+  
+  .future-card-tag {
+    display: inline-block;
+    padding: 0.125rem 0.375rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--accent-purple);
+    margin-bottom: var(--space-sm);
+  }
+  
+  .future-card h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+  }
+  
+  .future-card p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  
+  .v1-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    background: linear-gradient(135deg, rgba(125, 211, 252, 0.05), rgba(192, 132, 252, 0.05));
+    border: 1px solid rgba(125, 211, 252, 0.15);
+    border-radius: var(--radius-md);
+  }
+  
+  .v1-badge {
+    flex-shrink: 0;
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(135deg, rgba(125, 211, 252, 0.15), rgba(192, 132, 252, 0.15));
+    border: 1px solid rgba(125, 211, 252, 0.3);
+    border-radius: var(--radius-md);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-blue);
+  }
+  
+  .v1-content h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+  }
+  
+  .v1-content p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 768px) {
+    .roadmap-future-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .v1-preview {
+      flex-direction: column;
+    }
+  }
+</style>

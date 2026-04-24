@@ -1,0 +1,153 @@
+---
+---
+
+<section class="stats" id="stats">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card fade-in">
+        <div class="stat-number" data-target="1800">0</div>
+        <div class="stat-suffix">+</div>
+        <div class="stat-label">tests passing</div>
+      </div>
+      
+      <div class="stat-card fade-in">
+        <div class="stat-number" data-target="220">0</div>
+        <div class="stat-suffix">+</div>
+        <div class="stat-label">built-in functions</div>
+      </div>
+      
+      <div class="stat-card fade-in">
+        <div class="stat-number" data-target="10">0</div>
+        <div class="stat-suffix"></div>
+        <div class="stat-label">data types</div>
+      </div>
+      
+      <div class="stat-card fade-in">
+        <div class="stat-number" data-target="0">0</div>
+        <div class="stat-suffix"></div>
+        <div class="stat-label">external runtime deps</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stats {
+    padding: var(--space-4xl) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-lg);
+  }
+  
+  .stat-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0 var(--space-xs);
+    padding: var(--space-xl);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    border-color: var(--border-prominent);
+    transform: translateY(-2px);
+  }
+  
+  .stat-number {
+    font-family: var(--font-mono);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--accent-blue);
+    line-height: 1;
+  }
+  
+  .stat-suffix {
+    font-family: var(--font-mono);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    color: var(--accent-blue);
+    line-height: 1;
+  }
+  
+  .stat-label {
+    width: 100%;
+    margin-top: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    text-transform: lowercase;
+  }
+  
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+    }
+    
+    .stat-card {
+      padding: var(--space-lg);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    function animateCounter(element, target, duration) {
+      duration = duration || 2000;
+      var start = 0;
+      var startTime = performance.now();
+      
+      function updateCounter(currentTime) {
+        var elapsed = currentTime - startTime;
+        var progress = Math.min(elapsed / duration, 1);
+        var easeOut = 1 - Math.pow(2, -10 * progress);
+        var current = Math.floor(start + (target - start) * easeOut);
+        
+        element.textContent = current.toLocaleString();
+        
+        if (progress < 1) {
+          requestAnimationFrame(updateCounter);
+        } else {
+          element.textContent = target.toLocaleString();
+        }
+      }
+      
+      requestAnimationFrame(updateCounter);
+    }
+    
+    var statsObserver = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          var card = entry.target;
+          var numberEl = card.querySelector('.stat-number');
+          var target = parseInt(numberEl.getAttribute('data-target') || '0');
+          
+          if (target > 0) {
+            animateCounter(numberEl, target);
+          }
+          
+          statsObserver.unobserve(card);
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.stat-card').forEach(function(card) {
+        statsObserver.observe(card);
+      });
+    });
+  })();
+</script>

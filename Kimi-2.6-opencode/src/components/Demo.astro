@@ -1,0 +1,231 @@
+---
+---
+
+<section class="demo" id="demo">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-tag">Proof</span>
+      <h2 class="section-title">Doom-style 3D engine</h2>
+      <p class="section-description">
+        Written in PHP, compiled to a native binary with elephc. 
+        No interpreter, no VM — just raw assembly driving a real-time 3D renderer.
+      </p>
+    </div>
+    
+    <div class="demo-showcase fade-in">
+      <div class="demo-terminal">
+        <div class="terminal-window">
+          <div class="terminal-header">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+            <span class="terminal-title">doom.php — elephc compiled</span>
+          </div>
+          <div class="terminal-body demo-canvas-container">
+            <div class="demo-canvas-wrapper">
+              <pre class="demo-ascii"><code>╔══════════════════════════════════════════════════════════════╗
+║                                                              ║
+║    ████████████████████████████████████████████████          ║
+║    ██                                            ██          ║
+║    ██    ▓▓▓▓▓▓▓▓▓▓    ░░░░░░░░░░    ▓▓▓▓▓▓▓▓    ██          ║
+║    ██    ▓▓      ▓▓    ░░      ░░    ▓▓    ▓▓    ██          ║
+║    ██    ▓▓  ██  ▓▓    ░░  ██  ░░    ▓▓  ▓▓▓▓    ██          ║
+║    ██    ▓▓  ██  ▓▓    ░░  ██  ░░    ▓▓    ▓▓    ██          ║
+║    ██    ▓▓▓▓██▓▓▓▓    ░░░░██░░░░    ▓▓▓▓▓▓▓▓    ██          ║
+║    ██        ██            ██                    ██          ║
+║    ████████████████  ██████████████████████████████          ║
+║    ██            ██  ██                        ██            ║
+║    ██  ▓▓▓▓▓▓▓▓  ██  ██  ░░░░░░░░░░░░░░░░░░  ██            ║
+║    ██  ▓▓    ▓▓  ██  ██  ░░              ░░  ██            ║
+║    ██  ▓▓  ▓▓▓▓  ██████  ░░  ████████    ░░  ██            ║
+║    ██  ▓▓    ▓▓  ██  ██  ░░  ██    ██    ░░  ██            ║
+║    ██  ▓▓▓▓▓▓▓▓  ██  ██  ░░░░██    ██░░░░░░  ██            ║
+║    ██            ██  ██        ██    ██        ██            ║
+║    ████████████████  ████████████    ████████████            ║
+║                      ▓▓        ▓▓                            ║
+║                      ▓▓  ██    ▓▓        <span class="syntax-comment">60 FPS</span>              ║
+║                      ▓▓        ▓▓        <span class="syntax-comment">Native ARM64</span>         ║
+║                      ▓▓▓▓▓▓▓▓▓▓▓▓        <span class="syntax-comment">Zero runtime</span>          ║
+║                                                              ║
+║    [W/A/S/D] Move    [Mouse] Look    [ESC] Quit              ║
+╚══════════════════════════════════════════════════════════════╝</code></pre>
+            </div>
+            <div class="demo-overlay">
+              <div class="demo-badge">
+                <span class="demo-badge-dot"></span>
+                Live demo compiled with elephc
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="demo-details">
+        <div class="demo-detail-card">
+          <div class="demo-detail-icon">📐</div>
+          <h4>Raycasting engine</h4>
+          <p>Classic Wolfenstein-style raycaster with texture mapping, sprite rendering, and BSP-like collision detection — all in static PHP.</p>
+        </div>
+        
+        <div class="demo-detail-card">
+          <div class="demo-detail-icon">🎮</div>
+          <h4>Real-time input</h4>
+          <p>Keyboard and mouse input handled through FFI bindings to the native platform layer, compiled directly into the binary.</p>
+        </div>
+        
+        <div class="demo-detail-card">
+          <div class="demo-detail-icon">⚡</div>
+          <h4>60 FPS native</h4>
+          <p>No JIT warmup, no opcode interpretation — the game loop runs as pure ARM64 machine code from the first frame.</p>
+        </div>
+        
+        <div class="demo-detail-card">
+          <div class="demo-detail-icon">📦</div>
+          <h4>Single binary</h4>
+          <p>One executable file. No PHP installation, no shared libraries, no runtime dependencies. Copy and run anywhere.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="demo-cta fade-in">
+      <a href="https://github.com/illegalstudio/elephc/tree/main/examples/doom" class="btn btn-primary" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        View the source on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo {
+    padding: var(--space-4xl) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .demo-showcase {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: var(--space-2xl);
+    align-items: start;
+    margin-bottom: var(--space-2xl);
+  }
+  
+  .demo-terminal {
+    position: sticky;
+    top: 100px;
+  }
+  
+  .demo-terminal .terminal-window {
+    box-shadow: 
+      0 0 0 1px rgba(125, 211, 252, 0.1),
+      0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  
+  .demo-canvas-container {
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .demo-canvas-wrapper {
+    padding: var(--space-lg);
+    overflow-x: auto;
+  }
+  
+  .demo-ascii {
+    margin: 0;
+    font-size: 0.625rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+    white-space: pre;
+    user-select: none;
+  }
+  
+  .demo-ascii .syntax-comment {
+    color: var(--accent-green);
+  }
+  
+  .demo-overlay {
+    position: absolute;
+    bottom: var(--space-md);
+    left: var(--space-md);
+  }
+  
+  .demo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: rgba(10, 10, 15, 0.9);
+    border: 1px solid var(--border-subtle);
+    border-radius: 100px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-secondary);
+  }
+  
+  .demo-badge-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent-green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  
+  .demo-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+  
+  .demo-detail-card {
+    padding: var(--space-lg);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    transition: all 0.3s ease;
+  }
+  
+  .demo-detail-card:hover {
+    border-color: var(--border-prominent);
+    transform: translateX(4px);
+  }
+  
+  .demo-detail-icon {
+    font-size: 1.5rem;
+    margin-bottom: var(--space-sm);
+  }
+  
+  .demo-detail-card h4 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+  }
+  
+  .demo-detail-card p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  
+  .demo-cta {
+    text-align: center;
+  }
+  
+  @media (max-width: 768px) {
+    .demo-showcase {
+      grid-template-columns: 1fr;
+    }
+    
+    .demo-terminal {
+      position: relative;
+      top: 0;
+    }
+    
+    .demo-ascii {
+      font-size: 0.5rem;
+    }
+  }
+</style>

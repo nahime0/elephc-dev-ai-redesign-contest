@@ -1,0 +1,205 @@
+---
+---
+
+<nav class="nav" id="nav">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+      <span class="nav-logo-icon">>_</span>
+      <span class="nav-logo-text">elephc</span>
+    </a>
+    
+    <div class="nav-links" id="nav-links">
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#demo" class="nav-link">Demo</a>
+      <a href="#install" class="nav-link">Get started</a>
+      <a href="#roadmap" class="nav-link">Roadmap</a>
+      <a href="https://github.com/illegalstudio/elephc" class="nav-link nav-link-external" target="_blank" rel="noopener">
+        GitHub
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 9L9 3M9 3H4.5M9 3V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+    
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+      <span class="nav-toggle-bar"></span>
+    </button>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  
+  .nav-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-md) var(--space-lg);
+  }
+  
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    opacity: 1;
+  }
+  
+  .nav-logo-icon {
+    color: var(--accent-blue);
+  }
+  
+  .nav-logo-text {
+    letter-spacing: -0.02em;
+  }
+  
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+  
+  .nav-link {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    opacity: 1;
+  }
+  
+  .nav-link:hover {
+    color: var(--text-primary);
+    opacity: 1;
+  }
+  
+  .nav-link-external {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-sm);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .nav-toggle-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: all 0.3s ease;
+  }
+  
+  @media (max-width: 768px) {
+    .nav-links {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      padding: var(--space-md);
+      background: rgba(10, 10, 15, 0.98);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-subtle);
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-links.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .nav-link {
+      display: block;
+      padding: var(--space-md);
+      width: 100%;
+      text-align: center;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    
+    .nav-link:last-child {
+      border-bottom: none;
+    }
+    
+    .nav-toggle {
+      display: flex;
+    }
+    
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(1) {
+      transform: rotate(45deg) translate(4px, 4px);
+    }
+    
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .nav-toggle[aria-expanded="true"] .nav-toggle-bar:nth-child(3) {
+      transform: rotate(-45deg) translate(4px, -4px);
+    }
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var navToggle = document.getElementById('nav-toggle');
+    var navLinks = document.getElementById('nav-links');
+    
+    if (navToggle) {
+      navToggle.addEventListener('click', function() {
+        var isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
+        navToggle.setAttribute('aria-expanded', String(!isExpanded));
+        if (navLinks) navLinks.classList.toggle('open');
+      });
+    }
+    
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+      link.addEventListener('click', function() {
+        if (navToggle) navToggle.setAttribute('aria-expanded', 'false');
+        if (navLinks) navLinks.classList.remove('open');
+      });
+    });
+    
+    var nav = document.getElementById('nav');
+    window.addEventListener('scroll', function() {
+      if (nav) {
+        if (window.scrollY > 10) {
+          nav.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+        } else {
+          nav.style.boxShadow = 'none';
+        }
+      }
+    });
+  })();
+</script>

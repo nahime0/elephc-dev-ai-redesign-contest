@@ -1,0 +1,220 @@
+---
+---
+
+<footer class="footer" id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="footer-logo">
+          <span class="footer-logo-icon">>_</span>
+          <span class="footer-logo-text">elephc</span>
+        </a>
+        <p class="footer-description">
+          An open-source PHP compiler that lowers a static subset of PHP to native assembly for macOS ARM64, Linux ARM64, and Linux x86_64. Written in Rust. MIT licensed.
+        </p>
+        <div class="footer-version">
+          <span class="footer-version-badge">v0.19.7</span>
+        </div>
+      </div>
+      
+      <div class="footer-links">
+        <div class="footer-links-group">
+          <h4>Project</h4>
+          <ul>
+            <li><a href="https://github.com/illegalstudio/elephc" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="#install">Installation</a></li>
+            <li><a href="#demo">Examples</a></li>
+            <li><a href="/docs">Documentation</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links-group">
+          <h4>Learn</h4>
+          <ul>
+            <li><a href="#how-it-works">How it works</a></li>
+            <li><a href="#features">Language reference</a></li>
+            <li><a href="/docs/assembly">ARM64 assembly primer</a></li>
+            <li><a href="/docs/memory">Memory model</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-links-group">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://github.com/illegalstudio/elephc/issues" target="_blank" rel="noopener">Issues</a></li>
+            <li><a href="https://github.com/illegalstudio/elephc/discussions" target="_blank" rel="noopener">Discussions</a></li>
+            <li><a href="/docs/contributing">Contributing</a></li>
+            <li><a href="/code-of-conduct">Code of conduct</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="footer-story">
+        <p>
+          My first "serious programming" book was <em>PHP 4 and MySQL</em>. That book turned passion into profession. elephc fills a gap I always missed — compiling PHP modules to native code without leaving the PHP ecosystem behind.
+        </p>
+        <p class="footer-author">
+          A project by <a href="https://illegal.studio" target="_blank" rel="noopener">Illegal Studio</a> and <a href="https://nahi.me" target="_blank" rel="noopener">Vincenzo Petrucci</a>
+        </p>
+      </div>
+      
+      <div class="footer-legal">
+        <span>MIT License © 2026</span>
+        <span class="footer-legal-separator">·</span>
+        <a href="/license">License</a>
+        <span class="footer-legal-separator">·</span>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: var(--space-4xl) 0 var(--space-2xl);
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-secondary);
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: var(--space-3xl);
+    margin-bottom: var(--space-3xl);
+  }
+  
+  .footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    margin-bottom: var(--space-lg);
+    opacity: 1;
+  }
+  
+  .footer-logo-icon {
+    color: var(--accent-blue);
+  }
+  
+  .footer-description {
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    max-width: 400px;
+    margin-bottom: var(--space-lg);
+  }
+  
+  .footer-version-badge {
+    display: inline-block;
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--accent-green);
+  }
+  
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-xl);
+  }
+  
+  .footer-links-group h4 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+  
+  .footer-links-group ul {
+    list-style: none;
+  }
+  
+  .footer-links-group li {
+    margin-bottom: var(--space-sm);
+  }
+  
+  .footer-links-group a {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .footer-links-group a:hover {
+    color: var(--text-primary);
+    opacity: 1;
+  }
+  
+  .footer-bottom {
+    padding-top: var(--space-2xl);
+    border-top: 1px solid var(--border-subtle);
+  }
+  
+  .footer-story {
+    margin-bottom: var(--space-xl);
+    max-width: 600px;
+  }
+  
+  .footer-story p {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    line-height: 1.7;
+    font-style: italic;
+  }
+  
+  .footer-story em {
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  
+  .footer-author {
+    margin-top: var(--space-sm);
+    font-style: normal !important;
+  }
+  
+  .footer-legal {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  .footer-legal a {
+    color: var(--text-muted);
+    text-decoration: none;
+  }
+  
+  .footer-legal a:hover {
+    color: var(--text-secondary);
+    opacity: 1;
+  }
+  
+  .footer-legal-separator {
+    color: var(--border-prominent);
+  }
+  
+  @media (max-width: 768px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-2xl);
+    }
+    
+    .footer-links {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
